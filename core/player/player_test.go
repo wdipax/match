@@ -1,4 +1,4 @@
-package user_test
+package player_test
 
 import (
 	"testing"

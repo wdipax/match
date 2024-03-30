@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wdipax/match/core/player"
 	"github.com/wdipax/match/core/team"
-	"github.com/wdipax/match/core/user"
 )
 
 func TestTeam(t *testing.T) {
@@ -17,7 +17,7 @@ func TestTeam(t *testing.T) {
 
 		s := team.New("m")
 
-		u := user.New(
+		u := player.New(
 			"@raspberry", // account
 			"Dima",       // name
 			5,            // id
@@ -33,7 +33,7 @@ func TestTeam(t *testing.T) {
 
 		s := team.New("m")
 
-		u := user.New(
+		u := player.New(
 			"@raspberry", // account
 			"Dima",       // name
 			5,            // id

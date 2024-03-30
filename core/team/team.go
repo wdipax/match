@@ -3,12 +3,12 @@ package team
 import (
 	"fmt"
 
-	"github.com/wdipax/match/core/user"
+	"github.com/wdipax/match/core/player"
 )
 
 type Team struct {
 	name  string
-	users []*user.User
+	users []*player.Player
 }
 
 func New(name string) *Team {
@@ -17,7 +17,7 @@ func New(name string) *Team {
 	}
 }
 
-func (t *Team) AddUser(user *user.User) error {
+func (t *Team) AddUser(user *player.Player) error {
 	for _, v := range t.users {
 		if v.Account == user.Account {
 			return fmt.Errorf("user already exists: %s", user.Account)
