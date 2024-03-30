@@ -13,3 +13,7 @@ func New(account string, name string, id uint8) *Player {
 		ID:      id,
 	}
 }
+
+func (p *Player) Choose(id uint8) error {
+	return nil
+}

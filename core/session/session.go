@@ -12,7 +12,7 @@ func New() *Session {
 	return &Session{}
 }
 
-func (s *Session) NewTeam(name string) error {
+func (s *Session) AddTeam(name string) error {
 	for _, v := range s.teams {
 		if v == name {
 			return fmt.Errorf("team already exists: %s", name)

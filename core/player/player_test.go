@@ -2,18 +2,25 @@ package player_test
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/wdipax/match/core/player"
 )
 
 func TestUser(t *testing.T) {
 	t.Parallel()
 
-	// t.Run("it allows to chose a player from another team", func(t *testing.T) {
-	// 	t.Parallel()
+	t.Run("they can chose another player", func(t *testing.T) {
+		t.Parallel()
 
-	// 	s := session.New()
+		p := player.New(
+			"@raspberry", // account
+			"Dima",       // name
+			5,            // id
+		)
 
-	// 	err := s.Choose(5)
+		err := p.Choose(10)
 
-	// 	assert.NoError(t, err)
-	// })
+		assert.NoError(t, err)
+	})
 }
