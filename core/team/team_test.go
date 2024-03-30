@@ -27,7 +27,7 @@ func TestTeam(t *testing.T) {
 			s,
 		)
 
-		err := tm.AddUser(u)
+		err := tm.AddPlayer(u)
 
 		assert.NoError(t, err)
 	})
@@ -46,11 +46,11 @@ func TestTeam(t *testing.T) {
 			s,
 		)
 
-		err := tm.AddUser(u)
+		err := tm.AddPlayer(u)
 
 		require.NoError(t, err)
 
-		err = tm.AddUser(u)
+		err = tm.AddPlayer(u)
 
 		assert.Error(t, err, "already existed user was registered again")
 	})

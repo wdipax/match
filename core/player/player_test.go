@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/wdipax/match/core/player"
 	"github.com/wdipax/match/core/session"
+	"github.com/wdipax/match/core/team"
 )
 
 func TestUser(t *testing.T) {
@@ -16,14 +17,33 @@ func TestUser(t *testing.T) {
 
 		s := session.New()
 
-		p := player.New(
+		tm1 := team.New("m")
+
+		s.AddTeam(tm1)
+
+		p1 := player.New(
 			"@raspberry", // account
 			"Dima",       // name
 			5,            // id
 			s,
 		)
 
-		err := p.Choose(10)
+		tm1.AddPlayer(p1)
+
+		tm2 := team.New("f")
+
+		s.AddTeam(tm2)
+
+		p2 := player.New(
+			"@pineapple", // account
+			"Alice",      // name
+			10,           // id
+			s,
+		)
+
+		tm2.AddPlayer(p2)
+
+		err := p1.Choose(10)
 
 		assert.NoError(t, err)
 	})
@@ -33,12 +53,18 @@ func TestUser(t *testing.T) {
 
 		s := session.New()
 
+		tm := team.New("m")
+
+		s.AddTeam(tm)
+
 		p := player.New(
 			"@raspberry", // account
 			"Dima",       // name
 			5,            // id
 			s,
 		)
+
+		tm.AddPlayer(p)
 
 		err := p.Choose(5)
 

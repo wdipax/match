@@ -7,8 +7,9 @@ import (
 )
 
 type Team struct {
-	Name  string
-	users []*player.Player
+	Name string
+
+	players []*player.Player
 }
 
 func New(name string) *Team {
@@ -17,14 +18,24 @@ func New(name string) *Team {
 	}
 }
 
-func (t *Team) AddUser(user *player.Player) error {
-	for _, v := range t.users {
-		if v.Account == user.Account {
-			return fmt.Errorf("user already exists: %s", user.Account)
+func (t *Team) AddPlayer(p *player.Player) error {
+	for _, v := range t.players {
+		if v.Account == p.Account {
+			return fmt.Errorf("user already exists: %s", p.Account)
 		}
 	}
 
-	t.users = append(t.users, user)
+	t.players = append(t.players, p)
 
 	return nil
+}
+
+func (t *Team) HasPlayer(id uint8) bool {
+	for _, p := range t.players {
+		if p.ID == id {
+			return true
+		}
+	}
+
+	return false
 }
