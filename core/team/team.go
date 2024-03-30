@@ -17,18 +17,14 @@ func New(name string) *Team {
 	}
 }
 
-func (t *Team) AddUser(account string, name string, id uint8) error {
-	for _, user := range t.users {
-		if user.Account == account {
-			return fmt.Errorf("user already exists: %s", account)
+func (t *Team) AddUser(user *user.User) error {
+	for _, v := range t.users {
+		if v.Account == user.Account {
+			return fmt.Errorf("user already exists: %s", user.Account)
 		}
 	}
 
-	t.users = append(t.users, &user.User{
-		Account: account,
-		Name:    name,
-		ID:      id,
-	})
+	t.users = append(t.users, user)
 
 	return nil
 }
