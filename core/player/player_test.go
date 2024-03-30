@@ -23,4 +23,18 @@ func TestUser(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+
+	t.Run("they can not choose a player from their team", func(t *testing.T) {
+		t.Parallel()
+
+		p := player.New(
+			"@raspberry", // account
+			"Dima",       // name
+			5,            // id
+		)
+
+		err := p.Choose(5)
+
+		assert.Error(t, err, "choosen a player from the same team")
+	})
 }
