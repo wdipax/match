@@ -7,13 +7,13 @@ import (
 )
 
 type Team struct {
-	name  string
+	Name  string
 	users []*player.Player
 }
 
 func New(name string) *Team {
 	return &Team{
-		name: name,
+		Name: name,
 	}
 }
 

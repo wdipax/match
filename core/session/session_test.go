@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/wdipax/match/core/session"
+	"github.com/wdipax/match/core/team"
 )
 
 func TestSession(t *testing.T) {
@@ -16,9 +17,11 @@ func TestSession(t *testing.T) {
 
 		s := session.New()
 
-		err := s.AddTeam(
+		tm := team.New(
 			"m", // name
 		)
+
+		err := s.AddTeam(tm)
 
 		assert.NoError(t, err)
 	})
@@ -28,15 +31,15 @@ func TestSession(t *testing.T) {
 
 		s := session.New()
 
-		err := s.AddTeam(
+		tm := team.New(
 			"m", // name
 		)
+
+		err := s.AddTeam(tm)
 
 		require.NoError(t, err)
 
-		err = s.AddTeam(
-			"m", // name
-		)
+		err = s.AddTeam(tm)
 
 		assert.Error(t, err, "already existed team was created again")
 	})
