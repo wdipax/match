@@ -15,20 +15,26 @@ type Session struct {
 	users []*User
 }
 
-func New(teams []string) *Session {
-	return &Session{
-		teams: teams,
-	}
+func New() *Session {
+	return &Session{}
 }
 
 func (s *Session) NewTeam(name string) error {
+	for _, v := range s.teams {
+		if v == name {
+			return fmt.Errorf("team already exists: %s", name)
+		}
+	}
+
+	s.teams = append(s.teams, name)
+
 	return nil
 }
 
 func (s *Session) Register(account string, name string, id uint8) error {
 	for _, v := range s.users {
 		if v.Account == account {
-			return fmt.Errorf("user with that account already exists: %s", account)
+			return fmt.Errorf("user already exists: %s", account)
 		}
 	}
 
