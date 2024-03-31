@@ -49,6 +49,10 @@ func (s *Session) Choose(p1, p2 uint8) error {
 	return nil
 }
 
+func (s *Session) ComputeMatches(p uint8) []uint8 {
+	return nil
+}
+
 func (s *Session) playerTeam(id uint8) *team.Team {
 	for _, t := range s.teams {
 		if t.HasPlayer(id) {
