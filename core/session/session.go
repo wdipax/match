@@ -49,8 +49,18 @@ func (s *Session) Choose(p1, p2 uint8) error {
 	return nil
 }
 
-func (s *Session) ComputeMatches(p uint8) []uint8 {
-	return nil
+func (s *Session) PlayerMatches(id uint8) []uint8 {
+	var matches []uint8
+
+	for _, c1 := range s.playerChoices(id) {
+		for _, c2 := range s.playerChoices(c1) {
+			if c2 == id {
+				matches = append(matches, c1)
+			}
+		}
+	}
+
+	return matches
 }
 
 func (s *Session) playerTeam(id uint8) *team.Team {
@@ -61,4 +71,16 @@ func (s *Session) playerTeam(id uint8) *team.Team {
 	}
 
 	return nil
+}
+
+func (s *Session) playerChoices(id uint8) []uint8 {
+	var choices []uint8
+
+	for _, v := range s.choices {
+		if v[0] == id {
+			choices = append(choices, v[1])
+		}
+	}
+
+	return choices
 }

@@ -84,7 +84,7 @@ func TestSession(t *testing.T) {
 
 		require.NoError(t, p2.Choose(p1.ID))
 
-		assert.ElementsMatch(t, []uint8{p2.ID}, s.ComputeMatches(p1.ID), "wrong match for player1")
-		assert.ElementsMatch(t, []uint8{p1.ID}, s.ComputeMatches(p2.ID), "wrong match for player2")
+		assert.ElementsMatch(t, []uint8{p2.ID}, s.PlayerMatches(p1.ID), "wrong match for player1")
+		assert.ElementsMatch(t, []uint8{p1.ID}, s.PlayerMatches(p2.ID), "wrong match for player2")
 	})
 }
