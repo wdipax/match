@@ -12,7 +12,7 @@ import (
 func TestSession(t *testing.T) {
 	t.Parallel()
 
-	t.Run("it allows to create a new team", func(t *testing.T) {
+	t.Run("it allows to add a new team", func(t *testing.T) {
 		t.Parallel()
 
 		s := session.New()
@@ -26,7 +26,7 @@ func TestSession(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("it does not allow to create the same team twice", func(t *testing.T) {
+	t.Run("it does not allow to add the same team twice", func(t *testing.T) {
 		t.Parallel()
 
 		s := session.New()

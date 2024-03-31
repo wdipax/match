@@ -21,7 +21,11 @@ func New(name string) *Team {
 func (t *Team) AddPlayer(p *player.Player) error {
 	for _, v := range t.players {
 		if v.Account == p.Account {
-			return fmt.Errorf("user already exists: %s", p.Account)
+			return fmt.Errorf("player already exists: %s", p.Account)
+		}
+
+		if v.ID == p.ID {
+			return fmt.Errorf("player id is already taken: %d", p.ID)
 		}
 	}
 
