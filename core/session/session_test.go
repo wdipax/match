@@ -56,14 +56,22 @@ func TestSession(t *testing.T) {
 
 		require.NoError(t, s.AddTeam(tm1))
 
-		p1 := player.New(
+		m1 := player.New(
 			"@raspberry", // account
 			"Dima",       // name
 			5,            // ID
 			s,
 		)
 
-		require.NoError(t, tm1.AddPlayer(p1))
+		m2 := player.New(
+			"@johndoe", // account
+			"John",     // name
+			1,          // ID
+			s,
+		)
+
+		require.NoError(t, tm1.AddPlayer(m1))
+		require.NoError(t, tm1.AddPlayer(m2))
 
 		tm2 := team.New(
 			"f", // name
@@ -71,20 +79,37 @@ func TestSession(t *testing.T) {
 
 		require.NoError(t, s.AddTeam(tm2))
 
-		p2 := player.New(
+		f1 := player.New(
 			"@janeroe", // account
 			"Jane",     // name
 			10,         // ID
 			s,
 		)
 
-		require.NoError(t, tm2.AddPlayer(p2))
+		f2 := player.New(
+			"@pineapple", // account
+			"Alice",      // name
+			2,            // ID
+			s,
+		)
 
-		require.NoError(t, p1.Choose(p2.ID))
+		require.NoError(t, tm2.AddPlayer(f1))
+		require.NoError(t, tm2.AddPlayer(f2))
 
-		require.NoError(t, p2.Choose(p1.ID))
+		require.NoError(t, m1.Choose(f1.ID))
+		require.NoError(t, m1.Choose(f2.ID))
 
-		assert.ElementsMatch(t, []uint8{p2.ID}, s.PlayerMatches(p1.ID), "wrong match for player1")
-		assert.ElementsMatch(t, []uint8{p1.ID}, s.PlayerMatches(p2.ID), "wrong match for player2")
+		require.NoError(t, m2.Choose(f1.ID))
+
+		require.NoError(t, f1.Choose(m1.ID))
+		require.NoError(t, f1.Choose(m2.ID))
+
+		assert.ElementsMatch(t, []uint8{f1.ID}, s.PlayerMatches(m1.ID), "wrong match for m1")
+
+		assert.ElementsMatch(t, []uint8{f1.ID}, s.PlayerMatches(m2.ID), "wrong match for m2")
+
+		assert.ElementsMatch(t, []uint8{m1.ID, m2.ID}, s.PlayerMatches(f1.ID), "wrong match for f1")
+
+		assert.Empty(t, s.PlayerMatches(f2.ID), "wrong match for f2")
 	})
 }
