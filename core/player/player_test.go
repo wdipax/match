@@ -17,7 +17,7 @@ func TestUser(t *testing.T) {
 
 		s := session.New()
 
-		tm1 := team.New("m")
+		tm1 := team.New("m", s)
 
 		s.AddTeam(tm1)
 
@@ -30,7 +30,7 @@ func TestUser(t *testing.T) {
 
 		tm1.AddPlayer(p1)
 
-		tm2 := team.New("f")
+		tm2 := team.New("f", s)
 
 		s.AddTeam(tm2)
 
@@ -53,7 +53,7 @@ func TestUser(t *testing.T) {
 
 		s := session.New()
 
-		tm := team.New("m")
+		tm := team.New("m", s)
 
 		s.AddTeam(tm)
 

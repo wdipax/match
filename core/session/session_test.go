@@ -20,6 +20,7 @@ func TestSession(t *testing.T) {
 
 		tm := team.New(
 			"m", // name
+			s,
 		)
 
 		err := s.AddTeam(tm)
@@ -34,6 +35,7 @@ func TestSession(t *testing.T) {
 
 		tm := team.New(
 			"m", // name
+			s,
 		)
 
 		err := s.AddTeam(tm)
@@ -52,6 +54,7 @@ func TestSession(t *testing.T) {
 
 		tm1 := team.New(
 			"m", // name
+			s,
 		)
 
 		require.NoError(t, s.AddTeam(tm1))
@@ -75,6 +78,7 @@ func TestSession(t *testing.T) {
 
 		tm2 := team.New(
 			"f", // name
+			s,
 		)
 
 		require.NoError(t, s.AddTeam(tm2))

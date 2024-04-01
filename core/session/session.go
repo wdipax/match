@@ -3,6 +3,7 @@ package session
 import (
 	"fmt"
 
+	"github.com/wdipax/match/core/player"
 	"github.com/wdipax/match/core/team"
 )
 
@@ -63,9 +64,20 @@ func (s *Session) PlayerMatches(id uint8) []uint8 {
 	return matches
 }
 
+func (s *Session) HasPlayer(p *player.Player) bool {
+	for _, tm := range s.teams {
+		if tm.HasPlayer(p) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *Session) playerTeam(id uint8) *team.Team {
 	for _, t := range s.teams {
-		if t.HasPlayer(id) {
+		// TODO: can id collide in different teams?
+		if t.HasPlayerWithID(id) {
 			return t
 		}
 	}

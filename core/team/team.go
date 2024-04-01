@@ -9,24 +9,28 @@ import (
 type Team struct {
 	Name string
 
-	players []*player.Player
+	players  []*player.Player
+	allTeams AllTeams
 }
 
-func New(name string) *Team {
+type AllTeams interface {
+	HasPlayer(*player.Player) bool
+}
+
+func New(name string, allTeams AllTeams) *Team {
 	return &Team{
-		Name: name,
+		Name:     name,
+		allTeams: allTeams,
 	}
 }
 
 func (t *Team) AddPlayer(p *player.Player) error {
-	for _, v := range t.players {
-		if v.Account == p.Account {
-			return fmt.Errorf("player already exists: %s", p.Account)
-		}
+	if t.allTeams.HasPlayer(p) {
+		return fmt.Errorf("player already exists: %s", p.Account)
+	}
 
-		if v.ID == p.ID {
-			return fmt.Errorf("player id is already taken: %d", p.ID)
-		}
+	if t.HasPlayerWithID(p.ID) {
+		return fmt.Errorf("player id is already taken: %d", p.ID)
 	}
 
 	t.players = append(t.players, p)
@@ -34,7 +38,17 @@ func (t *Team) AddPlayer(p *player.Player) error {
 	return nil
 }
 
-func (t *Team) HasPlayer(id uint8) bool {
+func (t *Team) HasPlayer(p *player.Player) bool {
+	for _, v := range t.players {
+		if v.Account == p.Account {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (t *Team) HasPlayerWithID(id uint8) bool {
 	for _, p := range t.players {
 		if p.ID == id {
 			return true

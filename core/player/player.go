@@ -27,9 +27,5 @@ func (p *Player) Choose(id uint8) error {
 }
 
 func TheSame(p1, p2 *Player) bool {
-	if p1.Account == p2.Account {
-		return true
-	}
-
-	return false
+	return p1.Account == p2.Account
 }
