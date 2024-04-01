@@ -70,4 +70,26 @@ func TestUser(t *testing.T) {
 
 		assert.Error(t, err, "choosen a player from the same team")
 	})
+
+	t.Run("it compares players by account", func(t *testing.T) {
+		t.Parallel()
+
+		s := session.New()
+
+		p1 := player.New(
+			"@raspberry", // account
+			"Dima",       // name
+			5,            // id
+			s,
+		)
+
+		p2 := player.New(
+			"@raspberry", // account
+			"John",       // name
+			55,           // id
+			s,
+		)
+
+		assert.True(t, player.TheSame(p1, p2), "should be the same player")
+	})
 }

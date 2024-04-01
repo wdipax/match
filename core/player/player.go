@@ -25,3 +25,11 @@ func New(account string, name string, id uint8, session Session) *Player {
 func (p *Player) Choose(id uint8) error {
 	return p.session.Choose(p.ID, id)
 }
+
+func TheSame(p1, p2 *Player) bool {
+	if p1.Account == p2.Account {
+		return true
+	}
+
+	return false
+}
