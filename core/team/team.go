@@ -10,14 +10,14 @@ type Team struct {
 	Name string
 
 	players  []*player.Player
-	allTeams AllTeams
+	allTeams Session
 }
 
-type AllTeams interface {
+type Session interface {
 	HasPlayer(*player.Player) bool
 }
 
-func New(name string, allTeams AllTeams) *Team {
+func New(name string, allTeams Session) *Team {
 	return &Team{
 		Name:     name,
 		allTeams: allTeams,

@@ -9,7 +9,7 @@ type Player struct {
 }
 
 type Session interface {
-	Choose(p1, p2 uint8) error
+	Choose(p *Player, pID uint8) error
 }
 
 func New(account string, name string, id uint8, session Session) *Player {
@@ -23,7 +23,7 @@ func New(account string, name string, id uint8, session Session) *Player {
 }
 
 func (p *Player) Choose(id uint8) error {
-	return p.session.Choose(p.ID, id)
+	return p.session.Choose(p, id)
 }
 
 func TheSame(p1, p2 *Player) bool {

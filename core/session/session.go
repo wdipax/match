@@ -28,24 +28,24 @@ func (s *Session) AddTeam(t *team.Team) error {
 	return nil
 }
 
-func (s *Session) Choose(p1, p2 uint8) error {
-	t1 := s.playerTeam(p1)
+func (s *Session) Choose(p *player.Player, pID uint8) error {
+	t1 := s.playerTeam(p)
 
 	if t1 == nil {
-		return fmt.Errorf("player: %d has no team", p1)
+		return fmt.Errorf("player: %d has no team", p.ID)
 	}
 
-	t2 := s.playerTeam(p2)
+	teams := s.otherTeams(t1)
 
-	if t2 == nil {
-		return fmt.Errorf("player: %d has no team", p2)
+	if len(teams) == 0 {
+		return fmt.Errorf("player: %d has no team", pID)
 	}
 
-	if t1.Name == t2.Name {
-		return fmt.Errorf("can not chose a player from the same team")
+	for _, v := range teams {
+		if v.HasPlayerWithID(pID) {
+			s.choices = append(s.choices, []uint8{p.ID, pID})
+		}
 	}
-
-	s.choices = append(s.choices, []uint8{p1, p2})
 
 	return nil
 }
@@ -74,15 +74,27 @@ func (s *Session) HasPlayer(p *player.Player) bool {
 	return false
 }
 
-func (s *Session) playerTeam(id uint8) *team.Team {
+func (s *Session) playerTeam(p *player.Player) *team.Team {
 	for _, t := range s.teams {
-		// TODO: can id collide in different teams?
-		if t.HasPlayerWithID(id) {
+		// TODO: can id collide among different teams?
+		if t.HasPlayer(p) {
 			return t
 		}
 	}
 
 	return nil
+}
+
+func (s *Session) otherTeams(t *team.Team) []*team.Team {
+	var res []*team.Team
+
+	for _, v := range s.teams {
+		if v.Name != t.Name {
+			res = append(res, v)
+		}
+	}
+
+	return res
 }
 
 func (s *Session) playerChoices(id uint8) []uint8 {

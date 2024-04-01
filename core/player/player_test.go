@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/wdipax/match/core/player"
 	"github.com/wdipax/match/core/session"
 	"github.com/wdipax/match/core/team"
@@ -19,7 +20,7 @@ func TestUser(t *testing.T) {
 
 		tm1 := team.New("m", s)
 
-		s.AddTeam(tm1)
+		require.NoError(t, s.AddTeam(tm1))
 
 		p1 := player.New(
 			"@raspberry", // account
@@ -28,24 +29,22 @@ func TestUser(t *testing.T) {
 			s,
 		)
 
-		tm1.AddPlayer(p1)
+		require.NoError(t, tm1.AddPlayer(p1))
 
 		tm2 := team.New("f", s)
 
-		s.AddTeam(tm2)
+		require.NoError(t, s.AddTeam(tm2))
 
 		p2 := player.New(
 			"@pineapple", // account
 			"Alice",      // name
-			10,           // id
+			5,           // id
 			s,
 		)
 
-		tm2.AddPlayer(p2)
+		require.NoError(t, tm2.AddPlayer(p2))
 
-		err := p1.Choose(10)
-
-		assert.NoError(t, err)
+		assert.NoError(t, p1.Choose(p2.ID))
 	})
 
 	t.Run("they can not choose a player from their team", func(t *testing.T) {
@@ -55,20 +54,27 @@ func TestUser(t *testing.T) {
 
 		tm := team.New("m", s)
 
-		s.AddTeam(tm)
+		require.NoError(t, s.AddTeam(tm))
 
-		p := player.New(
+		p1 := player.New(
 			"@raspberry", // account
 			"Dima",       // name
 			5,            // id
 			s,
 		)
 
-		tm.AddPlayer(p)
+		p2 := player.New(
+			"@pineapple", // account
+			"Alice",      // name
+			6,            // id
+			s,
+		)
 
-		err := p.Choose(5)
+		require.NoError(t, tm.AddPlayer(p1))
 
-		assert.Error(t, err, "choosen a player from the same team")
+		require.NoError(t, tm.AddPlayer(p2))
+
+		assert.Error(t, p1.Choose(p2.ID), "choosen a player from the same team")
 	})
 
 	t.Run("it compares players by account", func(t *testing.T) {
