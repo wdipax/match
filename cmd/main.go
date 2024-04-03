@@ -4,6 +4,8 @@ import (
 	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/wdipax/match/adapter"
+	"github.com/wdipax/match/state"
 )
 
 func main() {
@@ -20,16 +22,22 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
+	s := state.New()
+
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
+		u := adapter.New(bot, update)
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
+		s.Process(u)
 
-		if _, err := bot.Send(msg); err != nil {
-			panic(err)
-		}
+		// if update.Message == nil {
+		// 	continue
+		// }
+
+		// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		// msg.ReplyToMessageID = update.Message.MessageID
+
+		// if _, err := bot.Send(msg); err != nil {
+		// 	panic(err)
+		// }
 	}
 }
