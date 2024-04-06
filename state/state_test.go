@@ -14,6 +14,18 @@ func TestState(t *testing.T) {
 
 		s := state.New()
 
-		s.Process(nil)
+		var u fakeUpdate
+
+		s.Process(u)
 	})
+}
+
+type fakeUpdate struct{}
+
+func (fakeUpdate) FromAdmin() bool {
+	return false
+}
+
+func (fakeUpdate) SendMessage(string) {
+	return
 }

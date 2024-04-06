@@ -24,20 +24,10 @@ func main() {
 
 	s := state.New()
 
+	// TODO: shutdown on receiving termination signal.
 	for update := range updates {
-		u := adapter.New(bot, update)
+		a := adapter.New(bot, update)
 
-		s.Process(u)
-
-		// if update.Message == nil {
-		// 	continue
-		// }
-
-		// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		// msg.ReplyToMessageID = update.Message.MessageID
-
-		// if _, err := bot.Send(msg); err != nil {
-		// 	panic(err)
-		// }
+		s.Process(a)
 	}
 }
