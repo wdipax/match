@@ -40,6 +40,13 @@ func TestState(t *testing.T) {
 	// CRUD Team member [admin,user]
 	// Vote. [user]
 	// Receive matches. [user]
+
+	// Restrictions.
+	// Only one session at a time for the admin.
+	// Only two teams per session: Male and Female.
+	// User can be registered only for one team.
+	// User can edit his profile only when registration to the team is open.
+	// User can vote only once per session. Though, multiple choices are allowed.
 }
 
 type fakeUpdate struct{}
