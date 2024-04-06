@@ -53,7 +53,10 @@ func TestState(t *testing.T) {
 	// Team members registration.
 	// Speed dating.
 	// Voting.
-	// Match making.
+	// Match making. [when all players vote, or by admin]
+
+	// Corner cases.
+	// Some player never votes. Then the admin can start the match making.
 }
 
 type fakeUpdate struct{}
