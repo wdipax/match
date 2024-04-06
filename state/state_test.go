@@ -47,6 +47,13 @@ func TestState(t *testing.T) {
 	// User can be registered only for one team.
 	// User can edit his profile only when registration to the team is open.
 	// User can vote only once per session. Though, multiple choices are allowed.
+
+	// Session states.
+	// Teams creation.
+	// Team members registration.
+	// Speed dating.
+	// Voting.
+	// Match making.
 }
 
 type fakeUpdate struct{}
