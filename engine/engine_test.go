@@ -149,6 +149,37 @@ func TestEngine(t *testing.T) {
 		// Then the second time the new session is not created.
 		assert.False(t, sh.sessionCreated)
 	})
+
+	t.Run("it starts male registration", func(t *testing.T) {
+		t.Parallel()
+
+		// Given there is an admin.
+		admin := uuid.NewString()
+
+		// When the admin starts a new session.
+		var evt fakeEvent
+		evt.userID = admin
+		evt.action = engine.NewSession
+
+		var sh spySessionHandler
+
+		st := state.New(&state.Settings{
+			Admins:         []string{admin},
+			SessionHandler: &sh,
+		})
+
+		e := engine.New(st)
+
+		e.Process(&evt)
+
+		// And starts a male team registration.
+		evt.action = engine.StartMaleRegistration
+
+		e.Process(&evt)
+
+		// Then the male registration is started.
+		assert.True(t, sh.maleRegistrationStarted)
+	})
 }
 
 type fakeEvent struct {
@@ -165,9 +196,10 @@ func (e *fakeEvent) UserID() string {
 }
 
 type spySessionHandler struct {
-	sessionCreated   bool
-	adminHelpPrinted bool
-	userHelpPrinted  bool
+	sessionCreated          bool
+	adminHelpPrinted        bool
+	userHelpPrinted         bool
+	maleRegistrationStarted bool
 }
 
 func (h *spySessionHandler) New() string {
@@ -186,4 +218,10 @@ func (h *spySessionHandler) Help(admin bool) string {
 	}
 
 	return ""
+}
+
+func (h *spySessionHandler) StartRegistration(teamID string) error {
+	h.maleRegistrationStarted = true
+
+	return nil
 }

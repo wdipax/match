@@ -8,6 +8,7 @@ type Engine struct {
 type StateHandler interface {
 	NewSession(userID string) error
 	Help(userID string) string
+	StartMaleRegistration(userID string) error
 }
 
 func New(state StateHandler) *Engine {
@@ -26,6 +27,7 @@ const (
 	Unknown Action = iota
 	Help
 	NewSession
+	StartMaleRegistration
 )
 
 // Event represents an event from the telegram.
@@ -40,5 +42,7 @@ func (e *Engine) Process(evt Event) {
 		e.state.Help(evt.UserID())
 	case NewSession:
 		e.state.NewSession(evt.UserID())
+	case StartMaleRegistration:
+		e.state.StartMaleRegistration(evt.UserID())
 	}
 }
