@@ -56,7 +56,7 @@ func TestEngine(t *testing.T) {
 			var sh spySessionHandler
 
 			st := state.New(&state.Settings{
-				Admins:         []string{user},
+				Admins:         []string{},
 				SessionHandler: &sh,
 			})
 
@@ -117,6 +117,36 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
+		assert.False(t, sh.sessionCreated)
+	})
+
+	t.Run("it does not start a new session when the session is in progress", func(t *testing.T) {
+		t.Parallel()
+
+		// Given there is an admin.
+		admin := uuid.NewString()
+
+		// When the admin starts a new session twice.
+		var evt fakeEvent
+		evt.userID = admin
+		evt.action = engine.NewSession
+
+		var sh spySessionHandler
+
+		st := state.New(&state.Settings{
+			Admins:         []string{admin},
+			SessionHandler: &sh,
+		})
+
+		e := engine.New(st)
+
+		e.Process(&evt)
+
+		sh.sessionCreated = false
+
+		e.Process(&evt)
+
+		// Then the second time the new session is not created.
 		assert.False(t, sh.sessionCreated)
 	})
 }

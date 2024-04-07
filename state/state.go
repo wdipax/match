@@ -8,6 +8,8 @@ import (
 type State struct {
 	admins         []string
 	sessionHandler SessionHandler
+
+	adminSession map[string]string
 }
 
 type SessionHandler interface {
@@ -25,6 +27,8 @@ func New(settings *Settings) *State {
 	return &State{
 		admins:         settings.Admins,
 		sessionHandler: settings.SessionHandler,
+
+		adminSession: make(map[string]string),
 	}
 }
 
@@ -33,7 +37,11 @@ func (s *State) NewSession(userID string) error {
 		return fmt.Errorf("user is not an admin")
 	}
 
-	s.sessionHandler.New()
+	if _, exists := s.adminSession[userID]; exists {
+		return fmt.Errorf("a session already exists")
+	}
+
+	s.adminSession[userID] = s.sessionHandler.New()
 
 	return nil
 }
