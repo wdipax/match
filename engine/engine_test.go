@@ -27,7 +27,7 @@ func TestEngine(t *testing.T) {
 			evt.action = engine.Help
 
 			// Then they receive a help message for admins.
-			var sh fakeSessionHandler
+			var sh spySessionHandler
 
 			st := state.New(&state.Settings{
 				Admins:         []string{admin},
@@ -43,6 +43,28 @@ func TestEngine(t *testing.T) {
 
 		t.Run("for regular users", func(t *testing.T) {
 			t.Parallel()
+
+			// Given there is a user.
+			user := uuid.NewString()
+
+			// When the user asks for a help.
+			var evt fakeEvent
+			evt.userID = user
+			evt.action = engine.Help
+
+			// Then they receive a help message for users.
+			var sh spySessionHandler
+
+			st := state.New(&state.Settings{
+				Admins:         []string{user},
+				SessionHandler: &sh,
+			})
+
+			e := engine.New(st)
+
+			e.Process(&evt)
+
+			assert.True(t, sh.userHelpPrinted)
 		})
 	})
 
@@ -58,7 +80,7 @@ func TestEngine(t *testing.T) {
 		evt.action = engine.NewSession
 
 		// Then the new session is created.
-		var sh fakeSessionHandler
+		var sh spySessionHandler
 
 		st := state.New(&state.Settings{
 			Admins:         []string{admin},
@@ -84,7 +106,7 @@ func TestEngine(t *testing.T) {
 		evt.action = engine.NewSession
 
 		// Then the new session is not created.
-		var sh fakeSessionHandler
+		var sh spySessionHandler
 
 		st := state.New(&state.Settings{
 			Admins:         []string{},
@@ -112,22 +134,25 @@ func (e *fakeEvent) UserID() string {
 	return e.userID
 }
 
-type fakeSessionHandler struct {
+type spySessionHandler struct {
 	sessionCreated   bool
 	adminHelpPrinted bool
+	userHelpPrinted  bool
 }
 
-func (h *fakeSessionHandler) New() string {
+func (h *spySessionHandler) New() string {
 	h.sessionCreated = true
 
 	return ""
 }
 
-func (fakeSessionHandler) Delete(id string) {}
+func (spySessionHandler) Delete(id string) {}
 
-func (h *fakeSessionHandler) Help(admin bool) string {
+func (h *spySessionHandler) Help(admin bool) string {
 	if admin {
 		h.adminHelpPrinted = true
+	} else {
+		h.userHelpPrinted = true
 	}
 
 	return ""
