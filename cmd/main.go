@@ -5,7 +5,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wdipax/match/adapter"
-	"github.com/wdipax/match/state"
+	"github.com/wdipax/match/engine"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
-	s := state.New()
+	s := engine.New()
 
 	// TODO: shutdown on receiving termination signal.
 	for update := range updates {
