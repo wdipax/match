@@ -7,6 +7,7 @@ type Engine struct {
 
 type StateHandler interface {
 	NewSession(userID string) error
+	Help(userID string) string
 }
 
 func New(state StateHandler) *Engine {
@@ -22,8 +23,9 @@ type Telegram interface{}
 type Action int
 
 const (
-	Unknown    Action = 0
-	NewSession Action = 1
+	Unknown Action = iota
+	Help
+	NewSession
 )
 
 // Event represents an event from the telegram.
@@ -32,9 +34,11 @@ type Event interface {
 	UserID() string
 }
 
-func (s *Engine) Process(e Event) {
-	switch e.Command() {
+func (e *Engine) Process(evt Event) {
+	switch evt.Command() {
+	case Help:
+		e.state.Help(evt.UserID())
 	case NewSession:
-		s.state.NewSession(e.UserID())
+		e.state.NewSession(evt.UserID())
 	}
 }

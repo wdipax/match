@@ -13,6 +13,7 @@ type State struct {
 type SessionHandler interface {
 	New() string
 	Delete(id string)
+	Help(admin bool) string
 }
 
 type Settings struct {
@@ -28,7 +29,7 @@ func New(settings *Settings) *State {
 }
 
 func (s *State) NewSession(userID string) error {
-	if !slices.Contains(s.admins, userID) {
+	if !s.isAdmin(userID) {
 		return fmt.Errorf("user is not an admin")
 	}
 
@@ -39,4 +40,12 @@ func (s *State) NewSession(userID string) error {
 
 func (s *State) EndSession(id string) {
 	s.sessionHandler.Delete(id)
+}
+
+func (s *State) Help(userID string) string {
+	return s.sessionHandler.Help(s.isAdmin(userID))
+}
+
+func (s *State) isAdmin(userID string) bool {
+	return slices.Contains(s.admins, userID)
 }
