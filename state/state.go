@@ -5,7 +5,8 @@ type State struct {
 }
 
 type SessionHandler interface {
-	New()
+	New() string
+	Delete(id string)
 }
 
 func New(sessionHandler SessionHandler) *State {
@@ -14,6 +15,10 @@ func New(sessionHandler SessionHandler) *State {
 	}
 }
 
-func (s *State) NewSession() {
-	s.sessionHandler.New()
+func (s *State) NewSession() string {
+	return s.sessionHandler.New()
+}
+
+func (s *State) EndSession(id string) {
+	s.sessionHandler.Delete(id)
 }
