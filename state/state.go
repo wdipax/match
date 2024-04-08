@@ -11,7 +11,6 @@ type State struct {
 	sessionHandler SessionHandler
 
 	userSession map[string]string
-	teams       []string
 }
 
 // SessionHandler interacts with the application core.
@@ -72,8 +71,6 @@ func (s *State) StartMaleRegistration(userID string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("starting male registration: %w", err)
 	}
-
-	s.teams = append(s.teams, teamID)
 
 	return teamID, nil
 }

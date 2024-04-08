@@ -6,8 +6,8 @@ type Engine struct {
 }
 
 type StateHandler interface {
-	NewSession(userID string) error
 	Help(userID string) string
+	NewSession(userID string) error
 	StartMaleRegistration(userID string) error
 }
 
