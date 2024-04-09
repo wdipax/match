@@ -3,7 +3,6 @@ package engine_test
 import (
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/wdipax/match/engine"
 )
@@ -11,22 +10,24 @@ import (
 func TestEngine(t *testing.T) {
 	t.Parallel()
 
-	t.Run("it prints help message", func(t *testing.T) {
+	t.Run("it responds with help message", func(t *testing.T) {
 		t.Parallel()
 
-		userID := uuid.NewString()
+		var tg fakeTelegramHandler
 
-		var evt fakeEvent
-		evt.userID = userID
-		evt.action = engine.Help
+		st := fakeStateHandler{
+			helpMsg: "test",
+		}
 
-		var sh fakeStateHandler
+		e := engine.New(&tg, &st)
 
-		e := engine.New(&sh)
+		evt := fakeEvent{
+			action: engine.Help,
+		}
 
 		e.Process(&evt)
 
-		assert.True(t, sh.helpCalled)
+		assert.Equal(t, "test", tg.sentMsg)
 	})
 
 	// t.Run("it starts a new session when requested by an admin", func(t *testing.T) {
@@ -143,8 +144,15 @@ func TestEngine(t *testing.T) {
 	// })
 }
 
+type fakeTelegramHandler struct {
+	sentMsg string
+}
+
+func (tg *fakeTelegramHandler) Send(msg string) {
+	tg.sentMsg = msg
+}
+
 type fakeEvent struct {
-	userID string
 	action engine.Action
 }
 
@@ -153,54 +161,21 @@ func (e *fakeEvent) Command() engine.Action {
 }
 
 func (e *fakeEvent) UserID() string {
-	return e.userID
+	return ""
 }
 
 type fakeStateHandler struct {
-	helpCalled bool
+	helpMsg string
 }
 
 func (h *fakeStateHandler) Help(userID string) string {
-	h.helpCalled = true
+	return h.helpMsg
+}
 
+func (h *fakeStateHandler) NewSession(userID string) string {
 	return ""
 }
 
-func (h *fakeStateHandler) NewSession(userID string) error {
-	return nil
-}
-
-func (h *fakeStateHandler) StartMaleRegistration(userID string) error {
-	return nil
-}
-
-type spySessionHandler struct {
-	sessionCreated          bool
-	adminHelpPrinted        bool
-	userHelpPrinted         bool
-	maleRegistrationStarted bool
-}
-
-func (h *spySessionHandler) New() string {
-	h.sessionCreated = true
-
+func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
 	return ""
-}
-
-func (spySessionHandler) Delete(id string) {}
-
-func (h *spySessionHandler) Help(admin bool) string {
-	if admin {
-		h.adminHelpPrinted = true
-	} else {
-		h.userHelpPrinted = true
-	}
-
-	return ""
-}
-
-func (h *spySessionHandler) StartRegistration(teamID string) error {
-	h.maleRegistrationStarted = true
-
-	return nil
 }

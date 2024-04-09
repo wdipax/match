@@ -2,18 +2,24 @@
 package engine
 
 type Engine struct {
-	state StateHandler
+	telegram TelegramHandler
+	state    StateHandler
+}
+
+type TelegramHandler interface {
+	Send(msg string)
 }
 
 type StateHandler interface {
 	Help(userID string) string
-	NewSession(userID string) error
-	StartMaleRegistration(userID string) error
+	NewSession(userID string) string
+	StartMaleRegistration(userID string) string
 }
 
-func New(state StateHandler) *Engine {
+func New(telegram TelegramHandler, state StateHandler) *Engine {
 	return &Engine{
-		state: state,
+		telegram: telegram,
+		state:    state,
 	}
 }
 
@@ -39,10 +45,10 @@ type Event interface {
 func (e *Engine) Process(evt Event) {
 	switch evt.Command() {
 	case Help:
-		e.state.Help(evt.UserID())
+		e.telegram.Send(e.state.Help(evt.UserID()))
 	case NewSession:
-		e.state.NewSession(evt.UserID())
+		e.telegram.Send(e.state.NewSession(evt.UserID()))
 	case StartMaleRegistration:
-		e.state.StartMaleRegistration(evt.UserID())
+		e.telegram.Send(e.state.StartMaleRegistration(evt.UserID()))
 	}
 }
