@@ -30,31 +30,25 @@ func TestEngine(t *testing.T) {
 		assert.Equal(t, "test", tg.sentMsg)
 	})
 
-	// t.Run("it starts a new session when requested by an admin", func(t *testing.T) {
-	// 	t.Parallel()
+	t.Run("it starts a new session", func(t *testing.T) {
+		t.Parallel()
 
-	// 	// Given there is an admin.
-	// 	admin := uuid.NewString()
+		var tg fakeTelegramHandler
 
-	// 	// When the admin starts a new session.
-	// 	var evt fakeEvent
-	// 	evt.userID = admin
-	// 	evt.action = engine.NewSession
+		st := fakeStateHandler{
+			newSessionMsg: "test",
+		}
 
-	// 	// Then the new session is created.
-	// 	var sh spySessionHandler
+		e := engine.New(&tg, &st)
 
-	// 	st := state.New(&state.Settings{
-	// 		Admins:         []string{admin},
-	// 		SessionHandler: &sh,
-	// 	})
+		evt := fakeEvent{
+			action: engine.NewSession,
+		}
 
-	// 	e := engine.New(st)
+		e.Process(&evt)
 
-	// 	e.Process(&evt)
-
-	// 	assert.True(t, sh.sessionCreated)
-	// })
+		assert.Equal(t, "test", tg.sentMsg)
+	})
 
 	// t.Run("it does not start a new session when requested by not an admin", func(t *testing.T) {
 	// 	t.Parallel()
@@ -165,7 +159,8 @@ func (e *fakeEvent) UserID() string {
 }
 
 type fakeStateHandler struct {
-	helpMsg string
+	helpMsg       string
+	newSessionMsg string
 }
 
 func (h *fakeStateHandler) Help(userID string) string {
@@ -173,7 +168,7 @@ func (h *fakeStateHandler) Help(userID string) string {
 }
 
 func (h *fakeStateHandler) NewSession(userID string) string {
-	return ""
+	return h.newSessionMsg
 }
 
 func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
