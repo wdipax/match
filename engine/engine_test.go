@@ -30,125 +30,126 @@ func TestEngine(t *testing.T) {
 		assert.Equal(t, "help user", tg.sentMsg)
 	})
 
-	// t.Run("it starts a new session", func(t *testing.T) {
-	// 	t.Parallel()
+	t.Run("it starts a new session", func(t *testing.T) {
+		t.Parallel()
 
-	// 	var tg fakeTelegramHandler
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
 
-	// 	st := fakeStateHandler{
-	// 		newSessionMsg: "test",
-	// 	}
+		e := engine.New(&tg, &st)
 
-	// 	e := engine.New(&tg, &st)
+		evt := fakeEvent{
+			action: engine.NewSession,
+			userID: "admin",
+		}
 
-	// 	evt := fakeEvent{
-	// 		action: engine.NewSession,
-	// 	}
+		e.Process(&evt)
 
-	// 	e.Process(&evt)
+		assert.Equal(t, "new session by admin", tg.sentMsg)
+	})
 
-	// 	assert.Equal(t, "test", tg.sentMsg)
-	// })
+	t.Run("it starts male registration", func(t *testing.T) {
+		t.Parallel()
 
-	// t.Run("it starts male registration", func(t *testing.T) {
-	// 	t.Parallel()
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
 
-	// 	var tg fakeTelegramHandler
+		e := engine.New(&tg, &st)
 
-	// 	st := fakeStateHandler{
-	// 		startMaleRegistrationMsg: "test",
-	// 	}
+		evt := fakeEvent{
+			action: engine.StartMaleRegistration,
+			userID: "admin",
+		}
 
-	// 	e := engine.New(&tg, &st)
+		e.Process(&evt)
 
-	// 	evt := fakeEvent{
-	// 		action: engine.StartMaleRegistration,
-	// 	}
+		assert.Equal(t, "start male registration by admin", tg.sentMsg)
+	})
 
-	// 	e.Process(&evt)
+	t.Run("it ends male registration", func(t *testing.T) {
+		t.Parallel()
 
-	// 	assert.Equal(t, "test", tg.sentMsg)
-	// })
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
 
-	// t.Run("it ends male registration", func(t *testing.T) {
-	// 	t.Parallel()
+		e := engine.New(&tg, &st)
 
-	// 	var tg fakeTelegramHandler
+		evt := fakeEvent{
+			action: engine.EndMaleRegistration,
+			userID: "admin",
+		}
 
-	// 	st := fakeStateHandler{
-	// 		endMaleRegistrationMsg: "test",
-	// 	}
+		e.Process(&evt)
 
-	// 	e := engine.New(&tg, &st)
+		assert.Equal(t, "end male registration by admin", tg.sentMsg)
+	})
 
-	// 	evt := fakeEvent{
-	// 		action: engine.EndMaleRegistration,
-	// 	}
+	t.Run("it starts female registration", func(t *testing.T) {
+		t.Parallel()
 
-	// 	e.Process(&evt)
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
 
-	// 	assert.Equal(t, "test", tg.sentMsg)
-	// })
+		e := engine.New(&tg, &st)
 
-	// t.Run("it starts female registration", func(t *testing.T) {
-	// 	t.Parallel()
+		evt := fakeEvent{
+			action: engine.StartFemaleRegistration,
+			userID: "admin",
+		}
 
-	// 	var tg fakeTelegramHandler
+		e.Process(&evt)
 
-	// 	st := fakeStateHandler{
-	// 		startFemaleRegistrationMsg: "test",
-	// 	}
+		assert.Equal(t, "start female registration by admin", tg.sentMsg)
+	})
 
-	// 	e := engine.New(&tg, &st)
+	t.Run("it ends female registration", func(t *testing.T) {
+		t.Parallel()
 
-	// 	evt := fakeEvent{
-	// 		action: engine.StartFemaleRegistration,
-	// 	}
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
 
-	// 	e.Process(&evt)
+		e := engine.New(&tg, &st)
 
-	// 	assert.Equal(t, "test", tg.sentMsg)
-	// })
+		evt := fakeEvent{
+			action: engine.EndFemaleRegistration,
+			userID: "admin",
+		}
 
-	// t.Run("it ends female registration", func(t *testing.T) {
-	// 	t.Parallel()
+		e.Process(&evt)
 
-	// 	var tg fakeTelegramHandler
+		assert.Equal(t, "end female registration by admin", tg.sentMsg)
+	})
 
-	// 	st := fakeStateHandler{
-	// 		endFemaleRegistrationMsg: "test",
-	// 	}
+	t.Run("it adds a team member", func(t *testing.T) {
+		t.Parallel()
 
-	// 	e := engine.New(&tg, &st)
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
 
-	// 	evt := fakeEvent{
-	// 		action: engine.EndFemaleRegistration,
-	// 	}
+		e := engine.New(&tg, &st)
 
-	// 	e.Process(&evt)
+		evt := fakeEvent{
+			action:  engine.AddTeamMember,
+			userID:  "user",
+			payload: "team",
+		}
 
-	// 	assert.Equal(t, "test", tg.sentMsg)
-	// })
+		e.Process(&evt)
 
-	// t.Run("it adds team member", func(t *testing.T) {
-	// 	t.Parallel()
-
-	// 	var tg fakeTelegramHandler
-
-	// 	st := fakeStateHandler{
-	// 		addTeamMemberMsg: "test",
-	// 	}
-
-	// 	e := engine.New(&tg, &st)
-
-	// 	evt := fakeEvent{
-	// 		action: engine.AddTeamMember,
-	// 	}
-
-	// 	e.Process(&evt)
-
-	// 	assert.Equal(t, "test", tg.sentMsg)
-	// })
+		assert.Equal(t, "add user as a team member for the team", tg.sentMsg)
+	})
 }
 
 type fakeTelegramHandler struct {
@@ -184,25 +185,25 @@ func (h *fakeStateHandler) Help(userID string) string {
 }
 
 func (h *fakeStateHandler) NewSession(userID string) string {
-	return "new session " + userID
+	return "new session by " + userID
 }
 
 func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
-	return "start male registration " + userID
+	return "start male registration by " + userID
 }
 
 func (h *fakeStateHandler) EndMaleRegistration(userID string) string {
-	return "end male registration " + userID
+	return "end male registration by " + userID
 }
 
 func (h *fakeStateHandler) StartFemaleRegistration(userID string) string {
-	return "start female registration " + userID
+	return "start female registration by " + userID
 }
 
 func (h *fakeStateHandler) EndFemaleRegistration(userID string) string {
-	return "end female registration " + userID
+	return "end female registration by " + userID
 }
 
 func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) string {
-	return "add team member " + userID + " " + teamID
+	return "add " + userID + " as a team member for the " + teamID
 }
