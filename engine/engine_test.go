@@ -89,6 +89,26 @@ func TestEngine(t *testing.T) {
 
 		assert.Equal(t, "test", tg.sentMsg)
 	})
+
+	t.Run("it starts female registration", func(t *testing.T) {
+		t.Parallel()
+
+		var tg fakeTelegramHandler
+
+		st := fakeStateHandler{
+			startFemaleRegistrationMsg: "test",
+		}
+
+		e := engine.New(&tg, &st)
+
+		evt := fakeEvent{
+			action: engine.StartFemaleRegistration,
+		}
+
+		e.Process(&evt)
+
+		assert.Equal(t, "test", tg.sentMsg)
+	})
 }
 
 type fakeTelegramHandler struct {
@@ -112,10 +132,11 @@ func (e *fakeEvent) UserID() string {
 }
 
 type fakeStateHandler struct {
-	helpMsg                  string
-	newSessionMsg            string
-	startMaleRegistrationMsg string
-	endMaleRegistrationMsg   string
+	helpMsg                    string
+	newSessionMsg              string
+	startMaleRegistrationMsg   string
+	endMaleRegistrationMsg     string
+	startFemaleRegistrationMsg string
 }
 
 func (h *fakeStateHandler) Help(userID string) string {
@@ -132,4 +153,8 @@ func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
 
 func (h *fakeStateHandler) EndMaleRegistration(userID string) string {
 	return h.endMaleRegistrationMsg
+}
+
+func (h *fakeStateHandler) StartFemaleRegistration(userID string) string {
+	return h.startFemaleRegistrationMsg
 }

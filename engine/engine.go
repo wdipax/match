@@ -15,7 +15,7 @@ type StateHandler interface {
 	NewSession(userID string) string
 	StartMaleRegistration(userID string) string
 	EndMaleRegistration(userID string) string
-	// StartFemaleRegistration(userID string) string
+	StartFemaleRegistration(userID string) string
 	// EndFealeRegistration(userID string) string
 	// AddTeamMember(userID string, teamID string) string
 	// TeamMemberName(userID string, name string) string
@@ -41,6 +41,7 @@ const (
 	NewSession
 	StartMaleRegistration
 	EndMaleRegistration
+	StartFemaleRegistration
 )
 
 // Event represents an event from the telegram.
@@ -59,5 +60,7 @@ func (e *Engine) Process(evt Event) {
 		e.telegram.Send(e.state.StartMaleRegistration(evt.UserID()))
 	case EndMaleRegistration:
 		e.telegram.Send(e.state.EndMaleRegistration(evt.UserID()))
+	case StartFemaleRegistration:
+		e.telegram.Send(e.state.StartFemaleRegistration(evt.UserID()))
 	}
 }
