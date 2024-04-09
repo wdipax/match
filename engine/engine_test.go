@@ -50,92 +50,25 @@ func TestEngine(t *testing.T) {
 		assert.Equal(t, "test", tg.sentMsg)
 	})
 
-	// t.Run("it does not start a new session when requested by not an admin", func(t *testing.T) {
-	// 	t.Parallel()
+	t.Run("it starts male registration", func(t *testing.T) {
+		t.Parallel()
 
-	// 	// Given there is a user.
-	// 	user := uuid.NewString()
+		var tg fakeTelegramHandler
 
-	// 	// When the user starts a new session.
-	// 	var evt fakeEvent
-	// 	evt.userID = user
-	// 	evt.action = engine.NewSession
+		st := fakeStateHandler{
+			startMaleRegistrationMsg: "test",
+		}
 
-	// 	// Then the new session is not created.
-	// 	var sh spySessionHandler
+		e := engine.New(&tg, &st)
 
-	// 	st := state.New(&state.Settings{
-	// 		Admins:         []string{},
-	// 		SessionHandler: &sh,
-	// 	})
+		evt := fakeEvent{
+			action: engine.StartMaleRegistration,
+		}
 
-	// 	e := engine.New(st)
+		e.Process(&evt)
 
-	// 	e.Process(&evt)
-
-	// 	assert.False(t, sh.sessionCreated)
-	// })
-
-	// t.Run("it does not start a new session when the session is in progress", func(t *testing.T) {
-	// 	t.Parallel()
-
-	// 	// Given there is an admin.
-	// 	admin := uuid.NewString()
-
-	// 	// When the admin starts a new session twice.
-	// 	var evt fakeEvent
-	// 	evt.userID = admin
-	// 	evt.action = engine.NewSession
-
-	// 	var sh spySessionHandler
-
-	// 	st := state.New(&state.Settings{
-	// 		Admins:         []string{admin},
-	// 		SessionHandler: &sh,
-	// 	})
-
-	// 	e := engine.New(st)
-
-	// 	e.Process(&evt)
-
-	// 	sh.sessionCreated = false
-
-	// 	e.Process(&evt)
-
-	// 	// Then the second time the new session is not created.
-	// 	assert.False(t, sh.sessionCreated)
-	// })
-
-	// t.Run("it starts male registration", func(t *testing.T) {
-	// 	t.Parallel()
-
-	// 	// Given there is an admin.
-	// 	admin := uuid.NewString()
-
-	// 	// When the admin starts a new session.
-	// 	var evt fakeEvent
-	// 	evt.userID = admin
-	// 	evt.action = engine.NewSession
-
-	// 	var sh spySessionHandler
-
-	// 	st := state.New(&state.Settings{
-	// 		Admins:         []string{admin},
-	// 		SessionHandler: &sh,
-	// 	})
-
-	// 	e := engine.New(st)
-
-	// 	e.Process(&evt)
-
-	// 	// And starts a male team registration.
-	// 	evt.action = engine.StartMaleRegistration
-
-	// 	e.Process(&evt)
-
-	// 	// Then the male registration is started.
-	// 	assert.True(t, sh.maleRegistrationStarted)
-	// })
+		assert.Equal(t, "test", tg.sentMsg)
+	})
 }
 
 type fakeTelegramHandler struct {
@@ -159,8 +92,9 @@ func (e *fakeEvent) UserID() string {
 }
 
 type fakeStateHandler struct {
-	helpMsg       string
-	newSessionMsg string
+	helpMsg                  string
+	newSessionMsg            string
+	startMaleRegistrationMsg string
 }
 
 func (h *fakeStateHandler) Help(userID string) string {
@@ -172,5 +106,5 @@ func (h *fakeStateHandler) NewSession(userID string) string {
 }
 
 func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
-	return ""
+	return h.startMaleRegistrationMsg
 }
