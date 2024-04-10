@@ -4,15 +4,15 @@ package adapter
 import "github.com/wdipax/match/state"
 
 type Adapter struct {
-	messenger MessengerHandler
-	state     StateHandler
+	messenger Messenger
+	state     State
 }
 
-type MessengerHandler interface {
+type Messenger interface {
 	Send(userID string, msg string)
 }
 
-type StateHandler interface {
+type State interface {
 	Help(userID string) []*state.Response
 	NewSession(userID string) []*state.Response
 	StartMaleRegistration(userID string) []*state.Response
@@ -27,7 +27,7 @@ type StateHandler interface {
 	EndSession(userID string) []*state.Response
 }
 
-func New(messenger MessengerHandler, state StateHandler) *Adapter {
+func New(messenger Messenger, state State) *Adapter {
 	return &Adapter{
 		messenger: messenger,
 		state:     state,
