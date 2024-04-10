@@ -7,13 +7,12 @@ type Engine struct {
 }
 
 type TelegramHandler interface {
-	Send(msg string)
+	Send(userID string, msg string)
 }
 
 type StateHandler interface {
 	Help(userID string) string
 	NewSession(userID string) string
-	EndSession(userID string) string
 	StartMaleRegistration(userID string) string
 	EndMaleRegistration(userID string) string
 	StartFemaleRegistration(userID string) string
@@ -23,7 +22,7 @@ type StateHandler interface {
 	TeamMemberNumber(userID string, number string) string
 	StartVoting(userID string) string
 	Vote(userID string, poll string) string
-	// EndVoting(userID string) string
+	EndSession(userID string) string
 }
 
 func New(telegram TelegramHandler, state StateHandler) *Engine {
@@ -63,30 +62,33 @@ type Event interface {
 }
 
 func (e *Engine) Process(evt Event) {
+	userID := evt.UserID()
+
 	switch evt.Command() {
 	case Help:
-		e.telegram.Send(e.state.Help(evt.UserID()))
+		e.telegram.Send(userID, e.state.Help(userID))
 	case NewSession:
-		e.telegram.Send(e.state.NewSession(evt.UserID()))
-	case EndSession:
-		e.telegram.Send(e.state.EndSession(evt.UserID()))
+		e.telegram.Send(userID, e.state.NewSession(userID))
 	case StartMaleRegistration:
-		e.telegram.Send(e.state.StartMaleRegistration(evt.UserID()))
+		e.telegram.Send(userID, e.state.StartMaleRegistration(userID))
 	case EndMaleRegistration:
-		e.telegram.Send(e.state.EndMaleRegistration(evt.UserID()))
+		e.telegram.Send(userID, e.state.EndMaleRegistration(userID))
 	case StartFemaleRegistration:
-		e.telegram.Send(e.state.StartFemaleRegistration(evt.UserID()))
+		e.telegram.Send(userID, e.state.StartFemaleRegistration(userID))
 	case EndFemaleRegistration:
-		e.telegram.Send(e.state.EndFemaleRegistration(evt.UserID()))
+		e.telegram.Send(userID, e.state.EndFemaleRegistration(userID))
 	case AddTeamMember:
-		e.telegram.Send(e.state.AddTeamMember(evt.UserID(), evt.Payload()))
+		e.telegram.Send(userID, e.state.AddTeamMember(userID, evt.Payload()))
 	case TeamMemberName:
-		e.telegram.Send(e.state.TeamMemberName(evt.UserID(), evt.Payload()))
+		e.telegram.Send(userID, e.state.TeamMemberName(userID, evt.Payload()))
 	case TeamMemberNumber:
-		e.telegram.Send(e.state.TeamMemberNumber(evt.UserID(), evt.Payload()))
+		e.telegram.Send(userID, e.state.TeamMemberNumber(userID, evt.Payload()))
 	case StartVoting:
-		e.telegram.Send(e.state.StartVoting(evt.UserID()))
+		e.telegram.Send(userID, e.state.StartVoting(userID))
 	case Vote:
-		e.telegram.Send(e.state.Vote(evt.UserID(), evt.Payload()))
+		e.telegram.Send(userID, e.state.Vote(userID, evt.Payload()))
+	case EndSession:
+		// TODO: send voting results.
+		e.telegram.Send(userID, e.state.EndSession(userID))
 	}
 }

@@ -27,7 +27,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "help user", tg.sentMsg)
+		assert.Equal(t, "user", tg.userID)
+		assert.Equal(t, "helped", tg.sentMsg)
 	})
 
 	t.Run("it starts a new session", func(t *testing.T) {
@@ -47,27 +48,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "new session by admin", tg.sentMsg)
-	})
-
-	t.Run("it ends the session", func(t *testing.T) {
-		t.Parallel()
-
-		var (
-			tg fakeTelegramHandler
-			st fakeStateHandler
-		)
-
-		e := engine.New(&tg, &st)
-
-		evt := fakeEvent{
-			action: engine.EndSession,
-			userID: "admin",
-		}
-
-		e.Process(&evt)
-
-		assert.Equal(t, "the session was ended by admin", tg.sentMsg)
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "started a new session", tg.sentMsg)
 	})
 
 	t.Run("it starts male registration", func(t *testing.T) {
@@ -87,7 +69,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "start male registration by admin", tg.sentMsg)
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "started male registration", tg.sentMsg)
 	})
 
 	t.Run("it ends male registration", func(t *testing.T) {
@@ -107,7 +90,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "end male registration by admin", tg.sentMsg)
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "ended male registration", tg.sentMsg)
 	})
 
 	t.Run("it starts female registration", func(t *testing.T) {
@@ -127,7 +111,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "start female registration by admin", tg.sentMsg)
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "started female registration", tg.sentMsg)
 	})
 
 	t.Run("it ends female registration", func(t *testing.T) {
@@ -147,7 +132,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "end female registration by admin", tg.sentMsg)
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "ended female registration", tg.sentMsg)
 	})
 
 	t.Run("it adds a team member", func(t *testing.T) {
@@ -168,7 +154,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "add user as a team member for the team", tg.sentMsg)
+		assert.Equal(t, "user", tg.userID)
+		assert.Equal(t, "added a team member for the team", tg.sentMsg)
 	})
 
 	t.Run("it sets a team member name", func(t *testing.T) {
@@ -189,7 +176,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user set team member name to John", tg.sentMsg)
+		assert.Equal(t, "user", tg.userID)
+		assert.Equal(t, "set a team member name to John", tg.sentMsg)
 	})
 
 	t.Run("it sets a team member number", func(t *testing.T) {
@@ -210,7 +198,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user set team member number to 5", tg.sentMsg)
+		assert.Equal(t, "user", tg.userID)
+		assert.Equal(t, "set a team member number to 5", tg.sentMsg)
 	})
 
 	t.Run("it starts voting", func(t *testing.T) {
@@ -230,7 +219,8 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin started voting", tg.sentMsg)
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "started voting", tg.sentMsg)
 	})
 
 	t.Run("it performs voting", func(t *testing.T) {
@@ -251,15 +241,39 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user voted for 1,2,3", tg.sentMsg)
+		assert.Equal(t, "user", tg.userID)
+		assert.Equal(t, "voted for 1,2,3", tg.sentMsg)
+	})
+
+	t.Run("it ends the session", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
+
+		e := engine.New(&tg, &st)
+
+		evt := fakeEvent{
+			action: engine.EndSession,
+			userID: "admin",
+		}
+
+		e.Process(&evt)
+
+		assert.Equal(t, "admin", tg.userID)
+		assert.Equal(t, "ended the session", tg.sentMsg)
 	})
 }
 
 type fakeTelegramHandler struct {
+	userID  string
 	sentMsg string
 }
 
-func (tg *fakeTelegramHandler) Send(msg string) {
+func (tg *fakeTelegramHandler) Send(userID string, msg string) {
+	tg.userID = userID
 	tg.sentMsg = msg
 }
 
@@ -284,49 +298,49 @@ func (e *fakeEvent) Payload() string {
 type fakeStateHandler struct{}
 
 func (h *fakeStateHandler) Help(userID string) string {
-	return "help " + userID
+	return "helped"
 }
 
 func (h *fakeStateHandler) NewSession(userID string) string {
-	return "new session by " + userID
-}
-
-func (h *fakeStateHandler) EndSession(userID string) string {
-	return "the session was ended by " + userID
+	return "started a new session"
 }
 
 func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
-	return "start male registration by " + userID
+	return "started male registration"
 }
 
 func (h *fakeStateHandler) EndMaleRegistration(userID string) string {
-	return "end male registration by " + userID
+	return "ended male registration"
 }
 
 func (h *fakeStateHandler) StartFemaleRegistration(userID string) string {
-	return "start female registration by " + userID
+	return "started female registration"
 }
 
 func (h *fakeStateHandler) EndFemaleRegistration(userID string) string {
-	return "end female registration by " + userID
+	return "ended female registration"
 }
 
 func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) string {
-	return "add " + userID + " as a team member for the " + teamID
+	return "added a team member for the " + teamID
 }
 
 func (h *fakeStateHandler) TeamMemberName(userID string, name string) string {
-	return userID + " set team member name to " + name
+	return "set a team member name to " + name
 }
 
 func (h *fakeStateHandler) TeamMemberNumber(userID string, number string) string {
-	return userID + " set team member number to " + number
+	return "set a team member number to " + number
 }
 
 func (h *fakeStateHandler) StartVoting(userID string) string {
-	return userID + " started voting"
+	return "started voting"
 }
 
 func (h *fakeStateHandler) Vote(userID string, poll string) string {
-	return userID + " voted for " + poll
+	return "voted for " + poll
+}
+
+func (h *fakeStateHandler) EndSession(userID string) string {
+	return "ended the session"
 }
