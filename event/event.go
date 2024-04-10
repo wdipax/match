@@ -1,7 +1,11 @@
 // event converts an incomming notification from messenger to the inner domain object.
 package event
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"strconv"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
 
 type Event struct {
 	update *tgbotapi.Update
@@ -67,9 +71,19 @@ func (e *Event) Command() Type {
 	}
 }
 
-// func (e *Event) UserID() string {
+func (e *Event) UserID() string {
+	msg := e.update.Message
+	if msg == nil {
+		return ""
+	}
 
-// }
+	user := msg.From
+	if user == nil {
+		return ""
+	}
+
+	return strconv.Itoa(int(user.ID))
+}
 
 // func (e *Event) Payload() string {
 

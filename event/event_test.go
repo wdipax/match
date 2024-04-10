@@ -92,3 +92,49 @@ func TestEvent_Command(t *testing.T) {
 		})
 	}
 }
+
+func TestEvent_UserID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no user id when there is no message", func(t *testing.T) {
+		t.Parallel()
+
+		u := &tgbotapi.Update{
+			Message: nil,
+		}
+
+		e := event.From(u)
+
+		assert.Empty(t, e.UserID())
+	})
+
+	t.Run("no user id when there is no user", func(t *testing.T) {
+		t.Parallel()
+
+		u := &tgbotapi.Update{
+			Message: &tgbotapi.Message{
+				From: nil,
+			},
+		}
+
+		e := event.From(u)
+
+		assert.Empty(t, e.UserID())
+	})
+
+	t.Run("user id", func(t *testing.T) {
+		t.Parallel()
+
+		u := &tgbotapi.Update{
+			Message: &tgbotapi.Message{
+				From: &tgbotapi.User{
+					ID: 111111111,
+				},
+			},
+		}
+
+		e := event.From(u)
+
+		assert.Equal(t, "111111111", e.UserID())
+	})
+}
