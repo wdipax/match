@@ -13,6 +13,7 @@ type TelegramHandler interface {
 type StateHandler interface {
 	Help(userID string) string
 	NewSession(userID string) string
+	EndSession(userID string) string
 	StartMaleRegistration(userID string) string
 	EndMaleRegistration(userID string) string
 	StartFemaleRegistration(userID string) string
@@ -39,6 +40,7 @@ const (
 	Unknown Action = iota
 	Help
 	NewSession
+	EndSession
 	StartMaleRegistration
 	EndMaleRegistration
 	StartFemaleRegistration
@@ -61,6 +63,8 @@ func (e *Engine) Process(evt Event) {
 		e.telegram.Send(e.state.Help(evt.UserID()))
 	case NewSession:
 		e.telegram.Send(e.state.NewSession(evt.UserID()))
+	case EndSession:
+		e.telegram.Send(e.state.EndSession(evt.UserID()))
 	case StartMaleRegistration:
 		e.telegram.Send(e.state.StartMaleRegistration(evt.UserID()))
 	case EndMaleRegistration:

@@ -50,6 +50,26 @@ func TestEngine(t *testing.T) {
 		assert.Equal(t, "new session by admin", tg.sentMsg)
 	})
 
+	t.Run("it ends the session", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
+
+		e := engine.New(&tg, &st)
+
+		evt := fakeEvent{
+			action: engine.EndSession,
+			userID: "admin",
+		}
+
+		e.Process(&evt)
+
+		assert.Equal(t, "the session was ended by admin", tg.sentMsg)
+	})
+
 	t.Run("it starts male registration", func(t *testing.T) {
 		t.Parallel()
 
@@ -228,6 +248,10 @@ func (h *fakeStateHandler) Help(userID string) string {
 
 func (h *fakeStateHandler) NewSession(userID string) string {
 	return "new session by " + userID
+}
+
+func (h *fakeStateHandler) EndSession(userID string) string {
+	return "the session was ended by " + userID
 }
 
 func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
