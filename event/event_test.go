@@ -52,6 +52,16 @@ func TestEvent_Command(t *testing.T) {
 			expect:    event.EndFemaleRegistration,
 		},
 		{
+			operation: "change user name",
+			command:   "/change_user_name",
+			expect:    event.ChangeUserName,
+		},
+		{
+			operation: "change user number",
+			command:   "/change_user_number",
+			expect:    event.ChangeUserNumber,
+		},
+		{
 			operation: "start voting",
 			command:   "/start_voting",
 			expect:    event.StartVoting,

@@ -30,6 +30,8 @@ type State interface {
 	EndMaleRegistration(userID string) []*state.Response
 	StartFemaleRegistration(userID string) []*state.Response
 	EndFemaleRegistration(userID string) []*state.Response
+	ChangeUserName(userID string) []*state.Response
+	ChangeUserNumber(userID string) []*state.Response
 	StartVoting(userID string) []*state.Response
 	EndSession(userID string) []*state.Response
 }
@@ -61,6 +63,10 @@ func (a *Adapter) Process(evt Event) {
 		responses = a.state.StartFemaleRegistration(userID)
 	case event.EndFemaleRegistration:
 		responses = a.state.EndFemaleRegistration(userID)
+	case event.ChangeUserName:
+		responses = a.state.ChangeUserName(userID)
+	case event.ChangeUserNumber:
+		responses = a.state.ChangeUserNumber(userID)
 	case event.StartVoting:
 		responses = a.state.StartVoting(userID)
 	case event.EndSession:

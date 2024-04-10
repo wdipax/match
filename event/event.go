@@ -29,6 +29,8 @@ const (
 	EndMaleRegistration
 	StartFemaleRegistration
 	EndFemaleRegistration
+	ChangeUserName
+	ChangeUserNumber
 	StartVoting
 	EndSession
 )
@@ -56,6 +58,10 @@ func (e *Event) Command() Type {
 		return StartFemaleRegistration
 	case "/end_female_registration":
 		return EndFemaleRegistration
+	case "/change_user_name":
+		return ChangeUserName
+	case "/change_user_number":
+		return ChangeUserNumber
 	case "/start_voting":
 		return StartVoting
 	case "/end_session":
@@ -79,6 +85,11 @@ func (e *Event) UserID() string {
 	return strconv.Itoa(int(user.ID))
 }
 
-// func (e *Event) Payload() string {
+func (e *Event) Payload() string {
+	msg := e.update.Message
+	if msg == nil {
+		return ""
+	}
 
-// }
+	return msg.Text
+}
