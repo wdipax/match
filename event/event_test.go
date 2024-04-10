@@ -71,6 +71,11 @@ func TestEvent_Command(t *testing.T) {
 			command:   "/end_session",
 			expect:    event.EndSession,
 		},
+		{
+			operation: "unknown operation",
+			command:   "/unknown_command",
+			expect:    event.Unknown,
+		},
 	} {
 		t.Run(testCase.operation, func(t *testing.T) {
 			t.Parallel()
