@@ -150,6 +150,27 @@ func TestEngine(t *testing.T) {
 
 		assert.Equal(t, "add user as a team member for the team", tg.sentMsg)
 	})
+
+	t.Run("it sets a team member name", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
+
+		e := engine.New(&tg, &st)
+
+		evt := fakeEvent{
+			action:  engine.TeamMemberName,
+			userID:  "user",
+			payload: "John",
+		}
+
+		e.Process(&evt)
+
+		assert.Equal(t, "user set team member name as John", tg.sentMsg)
+	})
 }
 
 type fakeTelegramHandler struct {
@@ -206,4 +227,8 @@ func (h *fakeStateHandler) EndFemaleRegistration(userID string) string {
 
 func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) string {
 	return "add " + userID + " as a team member for the " + teamID
+}
+
+func (h *fakeStateHandler) TeamMemberName(userID string, name string) string {
+	return userID + " set team member name as " + name
 }
