@@ -1,10 +1,10 @@
-package engine_test
+package adapter_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wdipax/match/engine"
+	"github.com/wdipax/match/adapter"
 	"github.com/wdipax/match/state"
 )
 
@@ -19,10 +19,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.Help,
+			action: adapter.Help,
 			userID: "user",
 		}
 
@@ -42,10 +42,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.NewSession,
+			action: adapter.NewSession,
 			userID: "admin",
 		}
 
@@ -65,10 +65,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.StartMaleRegistration,
+			action: adapter.StartMaleRegistration,
 			userID: "admin",
 		}
 
@@ -88,10 +88,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.EndMaleRegistration,
+			action: adapter.EndMaleRegistration,
 			userID: "admin",
 		}
 
@@ -111,10 +111,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.StartFemaleRegistration,
+			action: adapter.StartFemaleRegistration,
 			userID: "admin",
 		}
 
@@ -134,10 +134,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.EndFemaleRegistration,
+			action: adapter.EndFemaleRegistration,
 			userID: "admin",
 		}
 
@@ -157,10 +157,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  engine.AddTeamMember,
+			action:  adapter.AddTeamMember,
 			userID:  "user",
 			payload: "team",
 		}
@@ -181,10 +181,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  engine.TeamMemberName,
+			action:  adapter.TeamMemberName,
 			userID:  "user",
 			payload: "John",
 		}
@@ -205,10 +205,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  engine.TeamMemberNumber,
+			action:  adapter.TeamMemberNumber,
 			userID:  "user",
 			payload: "5",
 		}
@@ -229,10 +229,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.StartVoting,
+			action: adapter.StartVoting,
 			userID: "admin",
 		}
 
@@ -252,10 +252,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  engine.Vote,
+			action:  adapter.Vote,
 			userID:  "user",
 			payload: "1,2,3",
 		}
@@ -276,10 +276,10 @@ func TestEngine(t *testing.T) {
 			st fakeStateHandler
 		)
 
-		e := engine.New(&tg, &st)
+		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: engine.EndSession,
+			action: adapter.EndSession,
 			userID: "admin",
 		}
 
@@ -310,12 +310,12 @@ func (tg *spyMessengerHandler) Send(userID string, msg string) {
 }
 
 type fakeEvent struct {
-	action  engine.Action
+	action  adapter.Action
 	userID  string
 	payload string
 }
 
-func (e *fakeEvent) Command() engine.Action {
+func (e *fakeEvent) Command() adapter.Action {
 	return e.action
 }
 

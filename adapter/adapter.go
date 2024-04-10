@@ -1,37 +1,99 @@
+// adapter is a bridge between the outer telegram hendler and the inner state of the application.
 package adapter
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import "github.com/wdipax/match/state"
 
-type Update struct {
-	bot    *tgbotapi.BotAPI
-	update tgbotapi.Update
+type Adapter struct {
+	messenger MessengerHandler
+	state     StateHandler
 }
 
-func New(bot *tgbotapi.BotAPI, update tgbotapi.Update) *Update {
-	return &Update{
-		update: update,
-		bot:    bot,
+type MessengerHandler interface {
+	Send(userID string, msg string)
+}
+
+type StateHandler interface {
+	Help(userID string) []*state.Response
+	NewSession(userID string) []*state.Response
+	StartMaleRegistration(userID string) []*state.Response
+	EndMaleRegistration(userID string) []*state.Response
+	StartFemaleRegistration(userID string) []*state.Response
+	EndFemaleRegistration(userID string) []*state.Response
+	AddTeamMember(userID string, teamID string) []*state.Response
+	TeamMemberName(userID string, name string) []*state.Response
+	TeamMemberNumber(userID string, number string) []*state.Response
+	StartVoting(userID string) []*state.Response
+	Vote(userID string, poll string) []*state.Response
+	EndSession(userID string) []*state.Response
+}
+
+func New(messenger MessengerHandler, state StateHandler) *Adapter {
+	return &Adapter{
+		messenger: messenger,
+		state:     state,
 	}
 }
 
-func (u *Update) FromAdmin() bool {
-	update := u.update
+// Action represenst an event action.
+type Action int
 
-	if update.Message == nil || update.Message.From == nil {
-		return false
-	}
+const (
+	Unknown Action = iota
+	Help
+	NewSession
+	EndSession
+	StartMaleRegistration
+	EndMaleRegistration
+	StartFemaleRegistration
+	EndFemaleRegistration
+	AddTeamMember
+	TeamMemberName
+	TeamMemberNumber
+	StartVoting
+	Vote
+)
 
-	return update.Message.From.ID == 131381334
+// Event represents an event from the telegram.
+type Event interface {
+	Command() Action
+	UserID() string
+	Payload() string
 }
 
-func (u *Update) SendMessage(text string) {
-	update := u.update
-	bot := u.bot
+func (a *Adapter) Process(evt Event) {
+	userID := evt.UserID()
+	payload := evt.Payload()
 
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
-	msg.ReplyToMessageID = update.Message.MessageID
+	var responses []*state.Response
 
-	if _, err := bot.Send(msg); err != nil {
-		panic(err)
+	switch evt.Command() {
+	case Help:
+		responses = a.state.Help(userID)
+	case NewSession:
+		responses = a.state.NewSession(userID)
+	case StartMaleRegistration:
+		responses = a.state.StartMaleRegistration(userID)
+	case EndMaleRegistration:
+		responses = a.state.EndMaleRegistration(userID)
+	case StartFemaleRegistration:
+		responses = a.state.StartFemaleRegistration(userID)
+	case EndFemaleRegistration:
+		responses = a.state.EndFemaleRegistration(userID)
+	case AddTeamMember:
+		responses = a.state.AddTeamMember(userID, payload)
+	case TeamMemberName:
+		responses = a.state.TeamMemberName(userID, payload)
+	case TeamMemberNumber:
+		responses = a.state.TeamMemberNumber(userID, payload)
+	case StartVoting:
+		responses = a.state.StartVoting(userID)
+	case Vote:
+		responses = a.state.Vote(userID, payload)
+	case EndSession:
+		responses = a.state.EndSession(userID)
+	}
+
+	for _, re := range responses {
+		a.messenger.Send(re.UserID, re.MSG)
 	}
 }
