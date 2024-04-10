@@ -23,3 +23,56 @@ func New(settings *Settings) *State {
 		userSession: make(map[string]string),
 	}
 }
+
+type Response struct {
+	UserID string
+	MSG    string
+}
+
+func (s *Settings) Help(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) NewSession(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) StartMaleRegistration(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) EndMaleRegistration(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) StartFemaleRegistration(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) EndFemaleRegistration(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) AddTeamMember(userID string, teamID string) []*Response {
+	return nil
+}
+
+func (s *Settings) TeamMemberName(userID string, name string) []*Response {
+	return nil
+}
+
+func (s *Settings) TeamMemberNumber(userID string, number string) []*Response {
+	return nil
+}
+
+func (s *Settings) StartVoting(userID string) []*Response {
+	return nil
+}
+
+func (s *Settings) Vote(userID string, poll string) []*Response {
+	return nil
+}
+
+func (s *Settings) EndSession(userID string) []*Response {
+	return nil
+}

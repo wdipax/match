@@ -1,40 +1,36 @@
 // engine is a bridge between the outer telegram hendler and the inner logic of the application.
 package engine
 
+import "github.com/wdipax/match/state"
+
 type Engine struct {
-	telegram TelegramHandler
-	state    StateHandler
+	messenger MessengerHandler
+	state     StateHandler
 }
 
-type TelegramHandler interface {
+type MessengerHandler interface {
 	Send(userID string, msg string)
 }
 
-// TODO: this model belongs to the responder, move it there.
-type Message struct {
-	UserID string
-	MSG    string
-}
-
 type StateHandler interface {
-	Help(userID string) []*Message
-	NewSession(userID string) []*Message
-	StartMaleRegistration(userID string) []*Message
-	EndMaleRegistration(userID string) []*Message
-	StartFemaleRegistration(userID string) []*Message
-	EndFemaleRegistration(userID string) []*Message
-	AddTeamMember(userID string, teamID string) []*Message
-	TeamMemberName(userID string, name string) []*Message
-	TeamMemberNumber(userID string, number string) []*Message
-	StartVoting(userID string) []*Message
-	Vote(userID string, poll string) []*Message
-	EndSession(userID string) []*Message
+	Help(userID string) []*state.Response
+	NewSession(userID string) []*state.Response
+	StartMaleRegistration(userID string) []*state.Response
+	EndMaleRegistration(userID string) []*state.Response
+	StartFemaleRegistration(userID string) []*state.Response
+	EndFemaleRegistration(userID string) []*state.Response
+	AddTeamMember(userID string, teamID string) []*state.Response
+	TeamMemberName(userID string, name string) []*state.Response
+	TeamMemberNumber(userID string, number string) []*state.Response
+	StartVoting(userID string) []*state.Response
+	Vote(userID string, poll string) []*state.Response
+	EndSession(userID string) []*state.Response
 }
 
-func New(telegram TelegramHandler, state StateHandler) *Engine {
+func New(telegram MessengerHandler, state StateHandler) *Engine {
 	return &Engine{
-		telegram: telegram,
-		state:    state,
+		messenger: telegram,
+		state:     state,
 	}
 }
 
@@ -68,7 +64,7 @@ func (e *Engine) Process(evt Event) {
 	userID := evt.UserID()
 	payload := evt.Payload()
 
-	var responses []*Message
+	var responses []*state.Response
 
 	switch evt.Command() {
 	case Help:
@@ -98,6 +94,6 @@ func (e *Engine) Process(evt Event) {
 	}
 
 	for _, re := range responses {
-		e.telegram.Send(re.UserID, re.MSG)
+		e.messenger.Send(re.UserID, re.MSG)
 	}
 }
