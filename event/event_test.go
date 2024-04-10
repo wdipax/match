@@ -133,3 +133,33 @@ func TestEvent_UserID(t *testing.T) {
 		assert.Equal(t, "111111111", e.UserID())
 	})
 }
+
+func TestEvent_Payload(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty if no message", func(t *testing.T) {
+		t.Parallel()
+
+		u := &tgbotapi.Update{
+			Message: nil,
+		}
+
+		e := event.From(u)
+
+		assert.Empty(t, e.Payload())
+	})
+
+	t.Run("is message text", func(t *testing.T) {
+		t.Parallel()
+
+		u := &tgbotapi.Update{
+			Message: &tgbotapi.Message{
+				Text: "some text",
+			},
+		}
+
+		e := event.From(u)
+
+		assert.Equal(t, "some text", e.Payload())
+	})
+}
