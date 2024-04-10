@@ -14,7 +14,7 @@ func TestEngine(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -27,15 +27,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user", tg.userID)
-		assert.Equal(t, "helped", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "user",
+			MSG:    "helped",
+		}}, tg.sent)
 	})
 
 	t.Run("it starts a new session", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -48,15 +50,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "started a new session", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "started a new session",
+		}}, tg.sent)
 	})
 
 	t.Run("it starts male registration", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -69,15 +73,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "started male registration", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "started male registration",
+		}}, tg.sent)
 	})
 
 	t.Run("it ends male registration", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -90,15 +96,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "ended male registration", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "ended male registration",
+		}}, tg.sent)
 	})
 
 	t.Run("it starts female registration", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -111,15 +119,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "started female registration", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "started female registration",
+		}}, tg.sent)
 	})
 
 	t.Run("it ends female registration", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -132,15 +142,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "ended female registration", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "ended female registration",
+		}}, tg.sent)
 	})
 
 	t.Run("it adds a team member", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -154,15 +166,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user", tg.userID)
-		assert.Equal(t, "added a team member for the team", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "user",
+			MSG:    "added as a team member for the team",
+		}}, tg.sent)
 	})
 
 	t.Run("it sets a team member name", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -176,15 +190,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user", tg.userID)
-		assert.Equal(t, "set a team member name to John", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "user",
+			MSG:    "set a team member name to John",
+		}}, tg.sent)
 	})
 
 	t.Run("it sets a team member number", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -198,15 +214,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user", tg.userID)
-		assert.Equal(t, "set a team member number to 5", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "user",
+			MSG:    "set a team member number to 5",
+		}}, tg.sent)
 	})
 
 	t.Run("it starts voting", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -219,15 +237,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "started voting", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "started voting",
+		}}, tg.sent)
 	})
 
 	t.Run("it performs voting", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -241,15 +261,17 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user", tg.userID)
-		assert.Equal(t, "voted for 1,2,3", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "user",
+			MSG:    "voted for 1,2,3",
+		}}, tg.sent)
 	})
 
 	t.Run("it ends the session", func(t *testing.T) {
 		t.Parallel()
 
 		var (
-			tg fakeTelegramHandler
+			tg spyTelegramHandler
 			st fakeStateHandler
 		)
 
@@ -262,19 +284,28 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "admin", tg.userID)
-		assert.Equal(t, "ended the session", tg.sentMsg)
+		assert.ElementsMatch(t, []*engine.Message{{
+			UserID: "admin",
+			MSG:    "ended the session",
+		}, {
+			UserID: "John",
+			MSG:    "received his match Jane",
+		}, {
+			UserID: "Jane",
+			MSG:    "received his match John",
+		}}, tg.sent)
 	})
 }
 
-type fakeTelegramHandler struct {
-	userID  string
-	sentMsg string
+type spyTelegramHandler struct {
+	sent []*engine.Message
 }
 
-func (tg *fakeTelegramHandler) Send(userID string, msg string) {
-	tg.userID = userID
-	tg.sentMsg = msg
+func (tg *spyTelegramHandler) Send(userID string, msg string) {
+	tg.sent = append(tg.sent, &engine.Message{
+		UserID: userID,
+		MSG:    msg,
+	})
 }
 
 type fakeEvent struct {
@@ -297,50 +328,92 @@ func (e *fakeEvent) Payload() string {
 
 type fakeStateHandler struct{}
 
-func (h *fakeStateHandler) Help(userID string) string {
-	return "helped"
+func (h *fakeStateHandler) Help(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "helped",
+	}}
 }
 
-func (h *fakeStateHandler) NewSession(userID string) string {
-	return "started a new session"
+func (h *fakeStateHandler) NewSession(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "started a new session",
+	}}
 }
 
-func (h *fakeStateHandler) StartMaleRegistration(userID string) string {
-	return "started male registration"
+func (h *fakeStateHandler) StartMaleRegistration(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "started male registration",
+	}}
 }
 
-func (h *fakeStateHandler) EndMaleRegistration(userID string) string {
-	return "ended male registration"
+func (h *fakeStateHandler) EndMaleRegistration(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "ended male registration",
+	}}
 }
 
-func (h *fakeStateHandler) StartFemaleRegistration(userID string) string {
-	return "started female registration"
+func (h *fakeStateHandler) StartFemaleRegistration(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "started female registration",
+	}}
 }
 
-func (h *fakeStateHandler) EndFemaleRegistration(userID string) string {
-	return "ended female registration"
+func (h *fakeStateHandler) EndFemaleRegistration(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "ended female registration",
+	}}
 }
 
-func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) string {
-	return "added a team member for the " + teamID
+func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "added as a team member for the " + teamID,
+	}}
 }
 
-func (h *fakeStateHandler) TeamMemberName(userID string, name string) string {
-	return "set a team member name to " + name
+func (h *fakeStateHandler) TeamMemberName(userID string, name string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "set a team member name to " + name,
+	}}
 }
 
-func (h *fakeStateHandler) TeamMemberNumber(userID string, number string) string {
-	return "set a team member number to " + number
+func (h *fakeStateHandler) TeamMemberNumber(userID string, number string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "set a team member number to " + number,
+	}}
 }
 
-func (h *fakeStateHandler) StartVoting(userID string) string {
-	return "started voting"
+func (h *fakeStateHandler) StartVoting(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "started voting",
+	}}
 }
 
-func (h *fakeStateHandler) Vote(userID string, poll string) string {
-	return "voted for " + poll
+func (h *fakeStateHandler) Vote(userID string, poll string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "voted for " + poll,
+	}}
 }
 
-func (h *fakeStateHandler) EndSession(userID string) string {
-	return "ended the session"
+func (h *fakeStateHandler) EndSession(userID string) []*engine.Message {
+	return []*engine.Message{{
+		UserID: userID,
+		MSG:    "ended the session",
+	}, {
+		UserID: "John",
+		MSG:    "received his match Jane",
+	}, {
+		UserID: "Jane",
+		MSG:    "received his match John",
+	}}
 }

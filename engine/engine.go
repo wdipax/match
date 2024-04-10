@@ -10,19 +10,24 @@ type TelegramHandler interface {
 	Send(userID string, msg string)
 }
 
+type Message struct {
+	UserID string
+	MSG    string
+}
+
 type StateHandler interface {
-	Help(userID string) string
-	NewSession(userID string) string
-	StartMaleRegistration(userID string) string
-	EndMaleRegistration(userID string) string
-	StartFemaleRegistration(userID string) string
-	EndFemaleRegistration(userID string) string
-	AddTeamMember(userID string, teamID string) string
-	TeamMemberName(userID string, name string) string
-	TeamMemberNumber(userID string, number string) string
-	StartVoting(userID string) string
-	Vote(userID string, poll string) string
-	EndSession(userID string) string
+	Help(userID string) []*Message
+	NewSession(userID string) []*Message
+	StartMaleRegistration(userID string) []*Message
+	EndMaleRegistration(userID string) []*Message
+	StartFemaleRegistration(userID string) []*Message
+	EndFemaleRegistration(userID string) []*Message
+	AddTeamMember(userID string, teamID string) []*Message
+	TeamMemberName(userID string, name string) []*Message
+	TeamMemberNumber(userID string, number string) []*Message
+	StartVoting(userID string) []*Message
+	Vote(userID string, poll string) []*Message
+	EndSession(userID string) []*Message
 }
 
 func New(telegram TelegramHandler, state StateHandler) *Engine {
@@ -63,32 +68,38 @@ type Event interface {
 
 func (e *Engine) Process(evt Event) {
 	userID := evt.UserID()
+	payload := evt.Payload()
+
+	var responses []*Message
 
 	switch evt.Command() {
 	case Help:
-		e.telegram.Send(userID, e.state.Help(userID))
+		responses = e.state.Help(userID)
 	case NewSession:
-		e.telegram.Send(userID, e.state.NewSession(userID))
+		responses = e.state.NewSession(userID)
 	case StartMaleRegistration:
-		e.telegram.Send(userID, e.state.StartMaleRegistration(userID))
+		responses = e.state.StartMaleRegistration(userID)
 	case EndMaleRegistration:
-		e.telegram.Send(userID, e.state.EndMaleRegistration(userID))
+		responses = e.state.EndMaleRegistration(userID)
 	case StartFemaleRegistration:
-		e.telegram.Send(userID, e.state.StartFemaleRegistration(userID))
+		responses = e.state.StartFemaleRegistration(userID)
 	case EndFemaleRegistration:
-		e.telegram.Send(userID, e.state.EndFemaleRegistration(userID))
+		responses = e.state.EndFemaleRegistration(userID)
 	case AddTeamMember:
-		e.telegram.Send(userID, e.state.AddTeamMember(userID, evt.Payload()))
+		responses = e.state.AddTeamMember(userID, payload)
 	case TeamMemberName:
-		e.telegram.Send(userID, e.state.TeamMemberName(userID, evt.Payload()))
+		responses = e.state.TeamMemberName(userID, payload)
 	case TeamMemberNumber:
-		e.telegram.Send(userID, e.state.TeamMemberNumber(userID, evt.Payload()))
+		responses = e.state.TeamMemberNumber(userID, payload)
 	case StartVoting:
-		e.telegram.Send(userID, e.state.StartVoting(userID))
+		responses = e.state.StartVoting(userID)
 	case Vote:
-		e.telegram.Send(userID, e.state.Vote(userID, evt.Payload()))
+		responses = e.state.Vote(userID, payload)
 	case EndSession:
-		// TODO: send voting results.
-		e.telegram.Send(userID, e.state.EndSession(userID))
+		responses = e.state.EndSession(userID)
+	}
+
+	for _, re := range responses {
+		e.telegram.Send(re.UserID, re.MSG)
 	}
 }
