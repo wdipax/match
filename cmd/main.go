@@ -5,7 +5,6 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wdipax/match/adapter"
-	adapter1 "github.com/wdipax/match/adapter"
 )
 
 func main() {
@@ -22,12 +21,11 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
-	s := adapter1.New()
+	a := adapter.New(bot, update)
 
 	// TODO: shutdown on receiving termination signal.
 	for update := range updates {
-		a := adapter.New(bot, update)
-
-		s.Process(a)
+		// TODO: is it benefitial to use the sync pool here?
+		a.Process(update)
 	}
 }
