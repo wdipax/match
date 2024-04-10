@@ -232,6 +232,27 @@ func TestEngine(t *testing.T) {
 
 		assert.Equal(t, "admin started voting", tg.sentMsg)
 	})
+
+	t.Run("it performs voting", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
+
+		e := engine.New(&tg, &st)
+
+		evt := fakeEvent{
+			action:  engine.Vote,
+			userID:  "user",
+			payload: "1,2,3",
+		}
+
+		e.Process(&evt)
+
+		assert.Equal(t, "user voted for 1,2,3", tg.sentMsg)
+	})
 }
 
 type fakeTelegramHandler struct {
@@ -304,4 +325,8 @@ func (h *fakeStateHandler) TeamMemberNumber(userID string, number string) string
 
 func (h *fakeStateHandler) StartVoting(userID string) string {
 	return userID + " started voting"
+}
+
+func (h *fakeStateHandler) Vote(userID string, poll string) string {
+	return userID + " voted for " + poll
 }

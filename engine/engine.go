@@ -22,7 +22,7 @@ type StateHandler interface {
 	TeamMemberName(userID string, name string) string
 	TeamMemberNumber(userID string, number string) string
 	StartVoting(userID string) string
-	// Vote(userID string, poll string) string
+	Vote(userID string, poll string) string
 	// EndVoting(userID string) string
 }
 
@@ -52,6 +52,7 @@ const (
 	TeamMemberName
 	TeamMemberNumber
 	StartVoting
+	Vote
 )
 
 // Event represents an event from the telegram.
@@ -85,5 +86,7 @@ func (e *Engine) Process(evt Event) {
 		e.telegram.Send(e.state.TeamMemberNumber(evt.UserID(), evt.Payload()))
 	case StartVoting:
 		e.telegram.Send(e.state.StartVoting(evt.UserID()))
+	case Vote:
+		e.telegram.Send(e.state.Vote(evt.UserID(), evt.Payload()))
 	}
 }
