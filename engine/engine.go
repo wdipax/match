@@ -1,4 +1,4 @@
-// engine is a bridge between the outer telegram hendler and the inner core of our application.
+// engine is a bridge between the outer telegram hendler and the inner logic of the application.
 package engine
 
 type Engine struct {
@@ -10,6 +10,7 @@ type TelegramHandler interface {
 	Send(userID string, msg string)
 }
 
+// TODO: this model belongs to the responder, move it there.
 type Message struct {
 	UserID string
 	MSG    string
@@ -36,9 +37,6 @@ func New(telegram TelegramHandler, state StateHandler) *Engine {
 		state:    state,
 	}
 }
-
-// Telegram represents a telegram handler.
-type Telegram interface{}
 
 // Action represenst an event action.
 type Action int
