@@ -169,7 +169,28 @@ func TestEngine(t *testing.T) {
 
 		e.Process(&evt)
 
-		assert.Equal(t, "user set team member name as John", tg.sentMsg)
+		assert.Equal(t, "user set team member name to John", tg.sentMsg)
+	})
+
+	t.Run("it sets a team member number", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			tg fakeTelegramHandler
+			st fakeStateHandler
+		)
+
+		e := engine.New(&tg, &st)
+
+		evt := fakeEvent{
+			action:  engine.TeamMemberNumber,
+			userID:  "user",
+			payload: "5",
+		}
+
+		e.Process(&evt)
+
+		assert.Equal(t, "user set team member number to 5", tg.sentMsg)
 	})
 }
 
@@ -230,5 +251,9 @@ func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) string {
 }
 
 func (h *fakeStateHandler) TeamMemberName(userID string, name string) string {
-	return userID + " set team member name as " + name
+	return userID + " set team member name to " + name
+}
+
+func (h *fakeStateHandler) TeamMemberNumber(userID string, number string) string {
+	return userID + " set team member number to " + number
 }
