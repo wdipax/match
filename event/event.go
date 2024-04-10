@@ -42,6 +42,26 @@ func (e *Event) Command() Type {
 		return Help
 	case "/new_session":
 		return NewSession
+	case "/start_male_registration":
+		return StartMaleRegistration
+	case "/end_male_registration":
+		return EndMaleRegistration
+	case "/start_female_registration":
+		return StartFemaleRegistration
+	case "/end_female_registration":
+		return EndFemaleRegistration
+	case "/add_team_member":
+		return AddTeamMember
+	case "/team_member_name":
+		return TeamMemberName
+	case "/team_member_number":
+		return TeamMemberNumber
+	case "/start_voting":
+		return StartVoting
+	case "/vote":
+		return Vote
+	case "/end_session":
+		return EndSession
 	default:
 		return Unknown
 	}
