@@ -8,6 +8,13 @@ type Adapter struct {
 	state     State
 }
 
+func New(messenger Messenger, state State) *Adapter {
+	return &Adapter{
+		messenger: messenger,
+		state:     state,
+	}
+}
+
 type Messenger interface {
 	Send(userID string, msg string)
 }
@@ -27,13 +34,7 @@ type State interface {
 	EndSession(userID string) []*state.Response
 }
 
-func New(messenger Messenger, state State) *Adapter {
-	return &Adapter{
-		messenger: messenger,
-		state:     state,
-	}
-}
-
+// TODO: this type belongs to the Event implementation, move it there.
 // Action represenst an event action.
 type Action int
 
