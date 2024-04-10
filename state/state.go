@@ -1,6 +1,8 @@
 // state maps incoming requests to the inner logic of the application.
 package state
 
+type CoreHandler interface{}
+
 type State struct {
 	admins []string
 	core   CoreHandler
@@ -8,17 +10,10 @@ type State struct {
 	userSession map[string]string
 }
 
-type CoreHandler interface{}
-
-type Settings struct {
-	Admins []string
-	Core   CoreHandler
-}
-
-func New(settings *Settings) *State {
+func New(admins []string, core CoreHandler) *State {
 	return &State{
-		admins: settings.Admins,
-		core:   settings.Core,
+		admins: admins,
+		core:   core,
 
 		userSession: make(map[string]string),
 	}
@@ -29,50 +24,50 @@ type Response struct {
 	MSG    string
 }
 
-func (s *Settings) Help(userID string) []*Response {
+func (s *State) Help(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) NewSession(userID string) []*Response {
+func (s *State) NewSession(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) StartMaleRegistration(userID string) []*Response {
+func (s *State) StartMaleRegistration(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) EndMaleRegistration(userID string) []*Response {
+func (s *State) EndMaleRegistration(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) StartFemaleRegistration(userID string) []*Response {
+func (s *State) StartFemaleRegistration(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) EndFemaleRegistration(userID string) []*Response {
+func (s *State) EndFemaleRegistration(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) AddTeamMember(userID string, teamID string) []*Response {
+func (s *State) AddTeamMember(userID string, teamID string) []*Response {
 	return nil
 }
 
-func (s *Settings) TeamMemberName(userID string, name string) []*Response {
+func (s *State) TeamMemberName(userID string, name string) []*Response {
 	return nil
 }
 
-func (s *Settings) TeamMemberNumber(userID string, number string) []*Response {
+func (s *State) TeamMemberNumber(userID string, number string) []*Response {
 	return nil
 }
 
-func (s *Settings) StartVoting(userID string) []*Response {
+func (s *State) StartVoting(userID string) []*Response {
 	return nil
 }
 
-func (s *Settings) Vote(userID string, poll string) []*Response {
+func (s *State) Vote(userID string, poll string) []*Response {
 	return nil
 }
 
-func (s *Settings) EndSession(userID string) []*Response {
+func (s *State) EndSession(userID string) []*Response {
 	return nil
 }
