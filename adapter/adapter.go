@@ -1,7 +1,10 @@
 // adapter is a bridge between the outer telegram hendler and the inner state of the application.
 package adapter
 
-import "github.com/wdipax/match/state"
+import (
+	"github.com/wdipax/match/event"
+	"github.com/wdipax/match/state"
+)
 
 type Adapter struct {
 	messenger Messenger
@@ -34,29 +37,8 @@ type State interface {
 	EndSession(userID string) []*state.Response
 }
 
-// TODO: this type belongs to the Event implementation, move it there.
-// Action represenst an event action.
-type Action int
-
-const (
-	Unknown Action = iota
-	Help
-	NewSession
-	EndSession
-	StartMaleRegistration
-	EndMaleRegistration
-	StartFemaleRegistration
-	EndFemaleRegistration
-	AddTeamMember
-	TeamMemberName
-	TeamMemberNumber
-	StartVoting
-	Vote
-)
-
-// Event represents an event from the telegram.
 type Event interface {
-	Command() Action
+	Command() event.Type
 	UserID() string
 	Payload() string
 }
@@ -68,29 +50,29 @@ func (a *Adapter) Process(evt Event) {
 	var responses []*state.Response
 
 	switch evt.Command() {
-	case Help:
+	case event.Help:
 		responses = a.state.Help(userID)
-	case NewSession:
+	case event.NewSession:
 		responses = a.state.NewSession(userID)
-	case StartMaleRegistration:
+	case event.StartMaleRegistration:
 		responses = a.state.StartMaleRegistration(userID)
-	case EndMaleRegistration:
+	case event.EndMaleRegistration:
 		responses = a.state.EndMaleRegistration(userID)
-	case StartFemaleRegistration:
+	case event.StartFemaleRegistration:
 		responses = a.state.StartFemaleRegistration(userID)
-	case EndFemaleRegistration:
+	case event.EndFemaleRegistration:
 		responses = a.state.EndFemaleRegistration(userID)
-	case AddTeamMember:
+	case event.AddTeamMember:
 		responses = a.state.AddTeamMember(userID, payload)
-	case TeamMemberName:
+	case event.TeamMemberName:
 		responses = a.state.TeamMemberName(userID, payload)
-	case TeamMemberNumber:
+	case event.TeamMemberNumber:
 		responses = a.state.TeamMemberNumber(userID, payload)
-	case StartVoting:
+	case event.StartVoting:
 		responses = a.state.StartVoting(userID)
-	case Vote:
+	case event.Vote:
 		responses = a.state.Vote(userID, payload)
-	case EndSession:
+	case event.EndSession:
 		responses = a.state.EndSession(userID)
 	}
 

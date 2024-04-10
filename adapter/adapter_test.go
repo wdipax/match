@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wdipax/match/adapter"
+	"github.com/wdipax/match/event"
 	"github.com/wdipax/match/state"
 )
 
@@ -22,7 +23,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.Help,
+			action: event.Help,
 			userID: "user",
 		}
 
@@ -45,7 +46,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.NewSession,
+			action: event.NewSession,
 			userID: "admin",
 		}
 
@@ -68,7 +69,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.StartMaleRegistration,
+			action: event.StartMaleRegistration,
 			userID: "admin",
 		}
 
@@ -91,7 +92,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.EndMaleRegistration,
+			action: event.EndMaleRegistration,
 			userID: "admin",
 		}
 
@@ -114,7 +115,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.StartFemaleRegistration,
+			action: event.StartFemaleRegistration,
 			userID: "admin",
 		}
 
@@ -137,7 +138,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.EndFemaleRegistration,
+			action: event.EndFemaleRegistration,
 			userID: "admin",
 		}
 
@@ -160,7 +161,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  adapter.AddTeamMember,
+			action:  event.AddTeamMember,
 			userID:  "user",
 			payload: "team",
 		}
@@ -184,7 +185,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  adapter.TeamMemberName,
+			action:  event.TeamMemberName,
 			userID:  "user",
 			payload: "John",
 		}
@@ -208,7 +209,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  adapter.TeamMemberNumber,
+			action:  event.TeamMemberNumber,
 			userID:  "user",
 			payload: "5",
 		}
@@ -232,7 +233,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.StartVoting,
+			action: event.StartVoting,
 			userID: "admin",
 		}
 
@@ -255,7 +256,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  adapter.Vote,
+			action:  event.Vote,
 			userID:  "user",
 			payload: "1,2,3",
 		}
@@ -279,7 +280,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action: adapter.EndSession,
+			action: event.EndSession,
 			userID: "admin",
 		}
 
@@ -310,12 +311,12 @@ func (tg *spyMessengerHandler) Send(userID string, msg string) {
 }
 
 type fakeEvent struct {
-	action  adapter.Action
+	action  event.Type
 	userID  string
 	payload string
 }
 
-func (e *fakeEvent) Command() adapter.Action {
+func (e *fakeEvent) Command() event.Type {
 	return e.action
 }
 
