@@ -17,6 +17,11 @@ func TestEvent_Command(t *testing.T) {
 		expect    event.Type
 	}{
 		{
+			operation: "input",
+			command:   "some text",
+			expect:    event.Input,
+		},
+		{
 			operation: "help",
 			command:   "/help",
 			expect:    event.Help,
@@ -47,29 +52,9 @@ func TestEvent_Command(t *testing.T) {
 			expect:    event.EndFemaleRegistration,
 		},
 		{
-			operation: "add team member",
-			command:   "/add_team_member",
-			expect:    event.AddTeamMember,
-		},
-		{
-			operation: "team member name",
-			command:   "/team_member_name",
-			expect:    event.TeamMemberName,
-		},
-		{
-			operation: "team member number",
-			command:   "/team_member_number",
-			expect:    event.TeamMemberNumber,
-		},
-		{
 			operation: "start voting",
 			command:   "/start_voting",
 			expect:    event.StartVoting,
-		},
-		{
-			operation: "vote",
-			command:   "/vote",
-			expect:    event.Vote,
 		},
 		{
 			operation: "end session",

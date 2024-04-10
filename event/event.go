@@ -3,6 +3,7 @@ package event
 
 import (
 	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -21,17 +22,14 @@ type Type int
 
 const (
 	Unknown Type = iota
+	Input
 	Help
 	NewSession
 	StartMaleRegistration
 	EndMaleRegistration
 	StartFemaleRegistration
 	EndFemaleRegistration
-	AddTeamMember
-	TeamMemberName
-	TeamMemberNumber
 	StartVoting
-	Vote
 	EndSession
 )
 
@@ -39,6 +37,10 @@ func (e *Event) Command() Type {
 	msg := e.update.Message
 	if msg == nil {
 		return Unknown
+	}
+
+	if !strings.HasPrefix(msg.Text, "/") {
+		return Input
 	}
 
 	switch msg.Text {
@@ -54,16 +56,8 @@ func (e *Event) Command() Type {
 		return StartFemaleRegistration
 	case "/end_female_registration":
 		return EndFemaleRegistration
-	case "/add_team_member":
-		return AddTeamMember
-	case "/team_member_name":
-		return TeamMemberName
-	case "/team_member_number":
-		return TeamMemberNumber
 	case "/start_voting":
 		return StartVoting
-	case "/vote":
-		return Vote
 	case "/end_session":
 		return EndSession
 	default:

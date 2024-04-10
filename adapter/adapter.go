@@ -23,17 +23,14 @@ type Messenger interface {
 }
 
 type State interface {
+	Input(userID string, payload string) []*state.Response
 	Help(userID string) []*state.Response
 	NewSession(userID string) []*state.Response
 	StartMaleRegistration(userID string) []*state.Response
 	EndMaleRegistration(userID string) []*state.Response
 	StartFemaleRegistration(userID string) []*state.Response
 	EndFemaleRegistration(userID string) []*state.Response
-	AddTeamMember(userID string, teamID string) []*state.Response
-	TeamMemberName(userID string, name string) []*state.Response
-	TeamMemberNumber(userID string, number string) []*state.Response
 	StartVoting(userID string) []*state.Response
-	Vote(userID string, poll string) []*state.Response
 	EndSession(userID string) []*state.Response
 }
 
@@ -50,6 +47,8 @@ func (a *Adapter) Process(evt Event) {
 	var responses []*state.Response
 
 	switch evt.Command() {
+	case event.Input:
+		responses = a.state.Input(userID, payload)
 	case event.Help:
 		responses = a.state.Help(userID)
 	case event.NewSession:
@@ -62,16 +61,8 @@ func (a *Adapter) Process(evt Event) {
 		responses = a.state.StartFemaleRegistration(userID)
 	case event.EndFemaleRegistration:
 		responses = a.state.EndFemaleRegistration(userID)
-	case event.AddTeamMember:
-		responses = a.state.AddTeamMember(userID, payload)
-	case event.TeamMemberName:
-		responses = a.state.TeamMemberName(userID, payload)
-	case event.TeamMemberNumber:
-		responses = a.state.TeamMemberNumber(userID, payload)
 	case event.StartVoting:
 		responses = a.state.StartVoting(userID)
-	case event.Vote:
-		responses = a.state.Vote(userID, payload)
 	case event.EndSession:
 		responses = a.state.EndSession(userID)
 	}
