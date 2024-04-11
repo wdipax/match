@@ -12,6 +12,30 @@ import (
 func TestEngine(t *testing.T) {
 	t.Parallel()
 
+	t.Run("it accepts input", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			tg spyMessengerHandler
+			st fakeStateHandler
+		)
+
+		e := adapter.New(&tg, &st)
+
+		evt := fakeEvent{
+			action:  event.Input,
+			userID:  "user",
+			payload: "some text",
+		}
+
+		e.Process(&evt)
+
+		assert.ElementsMatch(t, []*state.Response{{
+			UserID: "user",
+			MSG:    "some text",
+		}}, tg.sent)
+	})
+
 	t.Run("it responds with help message", func(t *testing.T) {
 		t.Parallel()
 
@@ -150,7 +174,7 @@ func TestEngine(t *testing.T) {
 		}}, tg.sent)
 	})
 
-	t.Run("it adds a team member", func(t *testing.T) {
+	t.Run("it changes user name", func(t *testing.T) {
 		t.Parallel()
 
 		var (
@@ -161,20 +185,19 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  event.AddTeamMember,
-			userID:  "user",
-			payload: "team",
+			action: event.ChangeUserName,
+			userID: "user",
 		}
 
 		e.Process(&evt)
 
 		assert.ElementsMatch(t, []*state.Response{{
 			UserID: "user",
-			MSG:    "added as a team member for the team",
+			MSG:    "enter your name",
 		}}, tg.sent)
 	})
 
-	t.Run("it sets a team member name", func(t *testing.T) {
+	t.Run("it changes user number", func(t *testing.T) {
 		t.Parallel()
 
 		var (
@@ -185,31 +208,7 @@ func TestEngine(t *testing.T) {
 		e := adapter.New(&tg, &st)
 
 		evt := fakeEvent{
-			action:  event.TeamMemberName,
-			userID:  "user",
-			payload: "John",
-		}
-
-		e.Process(&evt)
-
-		assert.ElementsMatch(t, []*state.Response{{
-			UserID: "user",
-			MSG:    "set a team member name to John",
-		}}, tg.sent)
-	})
-
-	t.Run("it sets a team member number", func(t *testing.T) {
-		t.Parallel()
-
-		var (
-			tg spyMessengerHandler
-			st fakeStateHandler
-		)
-
-		e := adapter.New(&tg, &st)
-
-		evt := fakeEvent{
-			action:  event.TeamMemberNumber,
+			action:  event.ChangeUserNumber,
 			userID:  "user",
 			payload: "5",
 		}
@@ -218,7 +217,7 @@ func TestEngine(t *testing.T) {
 
 		assert.ElementsMatch(t, []*state.Response{{
 			UserID: "user",
-			MSG:    "set a team member number to 5",
+			MSG:    "enter your number",
 		}}, tg.sent)
 	})
 
@@ -242,30 +241,6 @@ func TestEngine(t *testing.T) {
 		assert.ElementsMatch(t, []*state.Response{{
 			UserID: "admin",
 			MSG:    "started voting",
-		}}, tg.sent)
-	})
-
-	t.Run("it performs voting", func(t *testing.T) {
-		t.Parallel()
-
-		var (
-			tg spyMessengerHandler
-			st fakeStateHandler
-		)
-
-		e := adapter.New(&tg, &st)
-
-		evt := fakeEvent{
-			action:  event.Vote,
-			userID:  "user",
-			payload: "1,2,3",
-		}
-
-		e.Process(&evt)
-
-		assert.ElementsMatch(t, []*state.Response{{
-			UserID: "user",
-			MSG:    "voted for 1,2,3",
 		}}, tg.sent)
 	})
 
@@ -330,6 +305,13 @@ func (e *fakeEvent) Payload() string {
 
 type fakeStateHandler struct{}
 
+func (h *fakeStateHandler) Input(userID string, payload string) []*state.Response {
+	return []*state.Response{{
+		UserID: userID,
+		MSG:    payload,
+	}}
+}
+
 func (h *fakeStateHandler) Help(userID string) []*state.Response {
 	return []*state.Response{{
 		UserID: userID,
@@ -379,17 +361,17 @@ func (h *fakeStateHandler) AddTeamMember(userID string, teamID string) []*state.
 	}}
 }
 
-func (h *fakeStateHandler) TeamMemberName(userID string, name string) []*state.Response {
+func (h *fakeStateHandler) ChangeUserName(userID string) []*state.Response {
 	return []*state.Response{{
 		UserID: userID,
-		MSG:    "set a team member name to " + name,
+		MSG:    "enter your name",
 	}}
 }
 
-func (h *fakeStateHandler) TeamMemberNumber(userID string, number string) []*state.Response {
+func (h *fakeStateHandler) ChangeUserNumber(userID string) []*state.Response {
 	return []*state.Response{{
 		UserID: userID,
-		MSG:    "set a team member number to " + number,
+		MSG:    "enter your number",
 	}}
 }
 
@@ -397,13 +379,6 @@ func (h *fakeStateHandler) StartVoting(userID string) []*state.Response {
 	return []*state.Response{{
 		UserID: userID,
 		MSG:    "started voting",
-	}}
-}
-
-func (h *fakeStateHandler) Vote(userID string, poll string) []*state.Response {
-	return []*state.Response{{
-		UserID: userID,
-		MSG:    "voted for " + poll,
 	}}
 }
 
