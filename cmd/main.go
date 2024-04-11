@@ -26,6 +26,8 @@ func main() {
 	// TODO: shutdown on receiving termination signal.
 	for update := range updates {
 		// TODO: is it benefitial to use the sync pool here?
+		// TODO: skip all messages created before the bot has started.
+		// TODO: serve concurrently.
 		a.Process(update)
 	}
 }

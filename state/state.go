@@ -1,19 +1,23 @@
 // state maps incoming requests to the inner logic of the application.
 package state
 
-type CoreHandler interface{}
+type Core interface {
+	NewSession() string
+}
+
+type IsAdmin func(userID string) bool
 
 type State struct {
-	admins []string
-	core   CoreHandler
+	isAdmin IsAdmin
+	core    Core
 
 	userSession map[string]string
 }
 
-func New(admins []string, core CoreHandler) *State {
+func New(isAdmin IsAdmin, core Core) *State {
 	return &State{
-		admins: admins,
-		core:   core,
+		isAdmin: isAdmin,
+		core:    core,
 
 		userSession: make(map[string]string),
 	}
@@ -24,11 +28,19 @@ type Response struct {
 	MSG    string
 }
 
+func (s *State) Input(userID string, payload string) []*Response {
+	return nil
+}
+
 func (s *State) Help(userID string) []*Response {
 	return nil
 }
 
 func (s *State) NewSession(userID string) []*Response {
+	if s.isAdmin(userID) {
+		s.core.NewSession()
+	}
+
 	return nil
 }
 
@@ -48,23 +60,15 @@ func (s *State) EndFemaleRegistration(userID string) []*Response {
 	return nil
 }
 
-func (s *State) AddTeamMember(userID string, teamID string) []*Response {
+func (s *State) ChangeUserName(userID string) []*Response {
 	return nil
 }
 
-func (s *State) TeamMemberName(userID string, name string) []*Response {
-	return nil
-}
-
-func (s *State) TeamMemberNumber(userID string, number string) []*Response {
+func (s *State) ChangeUserNumber(userID string) []*Response {
 	return nil
 }
 
 func (s *State) StartVoting(userID string) []*Response {
-	return nil
-}
-
-func (s *State) Vote(userID string, poll string) []*Response {
 	return nil
 }
 

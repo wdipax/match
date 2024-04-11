@@ -1,10 +1,8 @@
 package state_test
 
 import (
-	"slices"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/wdipax/match/state"
 )
@@ -12,51 +10,57 @@ import (
 func TestState(t *testing.T) {
 	t.Parallel()
 
-	t.Run("it can start a new session", func(t *testing.T) {
+	t.Run("admin can start a new session", func(t *testing.T) {
 		t.Parallel()
 
-		var sh sessionHandler
+		var (
+			c fakeCore
+		)
 
-		st := state.New(&sh)
-
-		st.NewSession()
-
-		assert.Len(t, sh.sessions, 1)
-	})
-
-	t.Run("it can end a session", func(t *testing.T) {
-		t.Parallel()
-
-		var sh sessionHandler
-
-		st := state.New(&sh)
-
-		id := st.NewSession()
-
-		st.EndSession(id)
-
-		assert.Empty(t, sh.sessions)
-	})
-}
-
-type sessionHandler struct {
-	sessions []string
-}
-
-func (h *sessionHandler) New() string {
-	id := uuid.NewString()
-
-	h.sessions = append(h.sessions, id)
-
-	return id
-}
-
-func (h *sessionHandler) Delete(id string) {
-	for i := range h.sessions {
-		if h.sessions[i] == id {
-			h.sessions = slices.Delete(h.sessions, i, i+1)
-
-			return
+		a := fakeIsAdmin{
+			adminID: "admin",
 		}
-	}
+
+		st := state.New(a.IsAdmin, &c)
+
+		st.NewSession("admin")
+
+		assert.Equal(t, 1, c.sessions)
+	})
+
+	t.Run("user can not start a new session", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			c fakeCore
+		)
+
+		a := fakeIsAdmin{
+			adminID: "admin",
+		}
+
+		st := state.New(a.IsAdmin, &c)
+
+		st.NewSession("user")
+
+		assert.Empty(t, c.sessions)
+	})
+}
+
+type fakeIsAdmin struct {
+	adminID string
+}
+
+func (a fakeIsAdmin) IsAdmin(userID string) bool {
+	return a.adminID == userID
+}
+
+type fakeCore struct {
+	sessions int
+}
+
+func (c *fakeCore) NewSession() string {
+	c.sessions++
+
+	return "session_id"
 }
