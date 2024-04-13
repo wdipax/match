@@ -3,6 +3,7 @@ package state
 
 type Core interface {
 	NewSession() string
+	NewTeam() string
 }
 
 type IsAdmin func(userID string) bool
@@ -45,7 +46,18 @@ func (s *State) NewSession(userID string) []*Response {
 }
 
 func (s *State) StartMaleRegistration(userID string) []*Response {
-	return nil
+	if !s.isAdmin(userID) {
+		return nil
+	}
+
+	teamID := s.core.NewTeam()
+
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    teamID,
+		},
+	}
 }
 
 func (s *State) EndMaleRegistration(userID string) []*Response {
@@ -53,7 +65,18 @@ func (s *State) EndMaleRegistration(userID string) []*Response {
 }
 
 func (s *State) StartFemaleRegistration(userID string) []*Response {
-	return nil
+	if !s.isAdmin(userID) {
+		return nil
+	}
+
+	teamID := s.core.NewTeam()
+
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    teamID,
+		},
+	}
 }
 
 func (s *State) EndFemaleRegistration(userID string) []*Response {
