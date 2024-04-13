@@ -30,7 +30,12 @@ type Response struct {
 }
 
 func (s *State) Input(userID string, payload string) []*Response {
-	return nil
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    "TODO",
+		},
+	}
 }
 
 func (s *State) Help(userID string) []*Response {

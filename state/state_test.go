@@ -93,7 +93,82 @@ func TestState(t *testing.T) {
 				assert.Equal(t, "female_team_id", res[0].MSG)
 			})
 		})
+
+		t.Run("user can join a team", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("male team", func(t *testing.T) {
+				t.Parallel()
+
+				var c fakeCore
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(a.IsAdmin, &c)
+
+				teamID := startTeamRegistration(t, helperSettings{
+					state:    st,
+					teamType: male,
+					core:     &c,
+					adminID: a.adminID,
+				})
+
+				res := st.Input("user", teamID)
+
+				require.Len(t, res, 1)
+
+				assert.Equal(t, "user", res[0].UserID)
+				// assert.Contains(t, res[0].MSG, teamID)
+			})
+
+			t.Run("female team", func(t *testing.T) {
+				t.Parallel()
+			})
+		})
 	})
+}
+
+type teamType int
+
+const (
+	male teamType = iota
+	female
+)
+
+type helperSettings struct {
+	state    *state.State
+	teamType teamType
+	core     *fakeCore
+	adminID string
+}
+
+func startTeamRegistration(tb testing.TB, settings helperSettings) string {
+	tb.Helper()
+
+	defer func(original string) {
+		settings.core.newTeamID = original
+	}(settings.core.newTeamID)
+
+	var startTeamRegistration func(userID string) []*state.Response
+
+	switch settings.teamType {
+	case male:
+		settings.core.newTeamID = "male_team_id"
+
+		startTeamRegistration = settings.state.StartMaleRegistration
+	case female:
+		settings.core.newTeamID = "female_team_id"
+
+		startTeamRegistration = settings.state.StartFemaleRegistration
+	}
+
+	res := startTeamRegistration(settings.adminID)
+
+	require.Len(tb, res, 1)
+
+	return res[0].MSG
 }
 
 type fakeIsAdmin struct {
