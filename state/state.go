@@ -8,36 +8,47 @@ type Core interface {
 
 type IsAdmin func(userID string) bool
 
-type JoinTeamMSG func(teamName string) string
+type ActionTeamMSG func(teamName string) string
 
 type StateSettings struct {
-	IsAdmin        IsAdmin
-	JoinTeamMSG    JoinTeamMSG
-	Core           Core
-	MaleTeamName   string
-	FemaleTeamName string
+	IsAdmin                IsAdmin
+	StartTeamMSG           ActionTeamMSG
+	JoinTeamMSG            ActionTeamMSG
+	AdminCanNotJoinTeamMSG ActionTeamMSG
+	EndTeamMSG             ActionTeamMSG
+	Core                   Core
+	MaleTeamName           string
+	FemaleTeamName         string
 }
 
 type State struct {
-	isAdmin        IsAdmin
-	joinTeamMSG    JoinTeamMSG
-	core           Core
-	maleTeamName   string
-	femaleTeamName string
+	isAdmin                IsAdmin
+	startTeamMSG           ActionTeamMSG
+	joinTeamMSG            ActionTeamMSG
+	adminCanNotJoinTeamMSG ActionTeamMSG
+	endTeamMSG             ActionTeamMSG
+	core                   Core
+	maleTeamName           string
+	femaleTeamName         string
 
-	teams      []*team
-	adminTeams map[string][]*team
+	teams        []*team
+	adminTeams   map[string][]*team
+	adminSession map[string]*session
 }
 
 func New(s StateSettings) *State {
 	return &State{
-		isAdmin:        s.IsAdmin,
-		joinTeamMSG:    s.JoinTeamMSG,
-		core:           s.Core,
-		maleTeamName:   s.MaleTeamName,
-		femaleTeamName: s.FemaleTeamName,
+		isAdmin:                s.IsAdmin,
+		startTeamMSG:           s.StartTeamMSG,
+		joinTeamMSG:            s.JoinTeamMSG,
+		adminCanNotJoinTeamMSG: s.AdminCanNotJoinTeamMSG,
+		endTeamMSG:             s.EndTeamMSG,
+		core:                   s.Core,
+		maleTeamName:           s.MaleTeamName,
+		femaleTeamName:         s.FemaleTeamName,
 
-		adminTeams: make(map[string][]*team),
+		adminTeams:   make(map[string][]*team),
+		adminSession: make(map[string]*session),
 	}
 }
 
@@ -47,6 +58,16 @@ type team struct {
 	registration bool
 }
 
+type sessionPhase int
+
+const (
+	teamManagement sessionPhase = iota
+)
+
+type session struct {
+	phase sessionPhase
+}
+
 type Response struct {
 	UserID string
 	MSG    string
@@ -54,6 +75,20 @@ type Response struct {
 
 func (s *State) Input(userID string, payload string) []*Response {
 	if s.isAdmin(userID) {
+		ss, ok := s.adminSession[userID]
+		if !ok {
+			return nil
+		}
+
+		if ss.phase == teamManagement {
+			return []*Response{
+				{
+					UserID: userID,
+					MSG:    s.adminCanNotJoinTeamMSG(""),
+				},
+			}
+		}
+
 		return nil
 	}
 
@@ -79,15 +114,28 @@ func (s *State) Help(userID string) []*Response {
 }
 
 func (s *State) NewSession(userID string) []*Response {
-	if s.isAdmin(userID) {
-		s.core.NewSession()
+	if !s.isAdmin(userID) {
+		return nil
 	}
+
+	s.core.NewSession()
+
+	ss := &session{
+		phase: teamManagement,
+	}
+
+	s.adminSession[userID] = ss
 
 	return nil
 }
 
 func (s *State) StartMaleRegistration(userID string) []*Response {
 	if !s.isAdmin(userID) {
+		return nil
+	}
+
+	_, ok := s.adminSession[userID]
+	if !ok {
 		return nil
 	}
 

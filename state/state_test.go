@@ -28,6 +28,7 @@ func TestState(t *testing.T) {
 				Core:    &c,
 			})
 
+			// TODO: admin should receive confirmation.
 			st.NewSession("admin")
 
 			assert.Equal(t, 1, c.sessions)
@@ -47,8 +48,7 @@ func TestState(t *testing.T) {
 				Core:    &c,
 			})
 
-			st.NewSession("user")
-
+			assert.Empty(t, st.NewSession("user"))
 			assert.Empty(t, c.sessions)
 		})
 	})
@@ -72,6 +72,8 @@ func TestState(t *testing.T) {
 					IsAdmin: a.IsAdmin,
 					Core:    &c,
 				})
+
+				st.NewSession("admin")
 
 				res := st.StartMaleRegistration("admin")
 
@@ -109,7 +111,49 @@ func TestState(t *testing.T) {
 		t.Run("user can not start registration to a team", func(t *testing.T) {
 			t.Parallel()
 
-			t.Fatal("TODO")
+			t.Run("male team", func(t *testing.T) {
+				t.Parallel()
+
+				c := fakeCore{
+					newTeamID: "male_team_id",
+				}
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin: a.IsAdmin,
+					Core:    &c,
+				})
+
+				st.NewSession("admin")
+
+				res := st.StartMaleRegistration("user")
+
+				assert.Empty(t, res)
+			})
+
+			t.Run("female team", func(t *testing.T) {
+				t.Parallel()
+
+				c := fakeCore{
+					newTeamID: "female_team_id",
+				}
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin: a.IsAdmin,
+					Core:    &c,
+				})
+
+				res := st.StartFemaleRegistration("user")
+
+				assert.Empty(t, res)
+			})
 		})
 
 		t.Run("user can join a team", func(t *testing.T) {
@@ -181,7 +225,34 @@ func TestState(t *testing.T) {
 		t.Run("admin can not join a team", func(t *testing.T) {
 			t.Parallel()
 
-			t.Fatal("TODO")
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin: a.IsAdmin,
+				AdminCanNotJoinTeamMSG: func(string) string {
+					return "you are admin, you can't join the team"
+				},
+				Core:         &c,
+				MaleTeamName: "male team",
+			})
+
+			teamID := startTeamRegistration(t, helperSettings{
+				state:    st,
+				teamType: male,
+				core:     &c,
+				adminID:  a.adminID,
+			})
+
+			res := st.Input("admin", teamID)
+
+			require.Len(t, res, 1)
+
+			assert.Equal(t, "admin", res[0].UserID)
+			assert.Equal(t, "you are admin, you can't join the team", res[0].MSG)
 		})
 
 		t.Run("admin can end registration to a team", func(t *testing.T) {
@@ -253,7 +324,57 @@ func TestState(t *testing.T) {
 		t.Run("user can not end registration to a team", func(t *testing.T) {
 			t.Parallel()
 
-			t.Fatal("TODO")
+			t.Run("male team", func(t *testing.T) {
+				t.Parallel()
+
+				var c fakeCore
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin:      a.IsAdmin,
+					JoinTeamMSG:  joinTeamMSG,
+					Core:         &c,
+					MaleTeamName: "male team",
+				})
+
+				startTeamRegistration(t, helperSettings{
+					state:    st,
+					teamType: female,
+					core:     &c,
+					adminID:  a.adminID,
+				})
+
+				assert.Empty(t, st.EndMaleRegistration("user"))
+			})
+
+			t.Run("female team", func(t *testing.T) {
+				t.Parallel()
+
+				var c fakeCore
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin:        a.IsAdmin,
+					JoinTeamMSG:    joinTeamMSG,
+					Core:           &c,
+					FemaleTeamName: "female team",
+				})
+
+				startTeamRegistration(t, helperSettings{
+					state:    st,
+					teamType: female,
+					core:     &c,
+					adminID:  a.adminID,
+				})
+
+				assert.Empty(t, st.EndFemaleRegistration("user"))
+			})
 		})
 
 		t.Run("user can not join a team", func(t *testing.T) {
@@ -360,6 +481,8 @@ type helperSettings struct {
 
 func startTeamRegistration(tb testing.TB, settings helperSettings) string {
 	tb.Helper()
+
+	settings.state.NewSession(settings.adminID)
 
 	defer func(original string) {
 		settings.core.newTeamID = original
