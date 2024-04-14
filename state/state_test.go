@@ -484,12 +484,15 @@ func TestState(t *testing.T) {
 				Core:        &c,
 			})
 
+			st.NewSession("admin")
+
 			res := st.StartVoting("admin")
 
 			assert.NotEmpty(t, res)
 		})
 
-		// TODO: user can not start voting
+		// TODO: all users receive polls
+
 		t.Run("user can not start voting", func(t *testing.T) {
 			t.Parallel()
 
@@ -510,7 +513,44 @@ func TestState(t *testing.T) {
 			assert.Empty(t, res)
 		})
 
-		// TODO: user can vote
+		t.Run("user can vote", func(t *testing.T) {
+			t.Parallel()
+
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin:     a.IsAdmin,
+				JoinTeamMSG: joinTeamMSG,
+				Core:        &c,
+				VoteReceivedMSG: func(optional string) string {
+					return "your vote is received, wat for the results"
+				},
+			})
+
+			teamID := startTeamRegistration(t, helperSettings{
+				state:    st,
+				teamType: male,
+				core:     &c,
+				adminID:  "admin",
+			})
+
+			st.Input("user", teamID)
+
+			res := st.StartVoting("admin")
+
+			require.NotEmpty(t, res)
+
+			res = st.Input("user", "vote")
+
+			require.Len(t, res, 1)
+
+			assert.Equal(t, "user", res[0].UserID)
+			assert.Equal(t, "your vote is received, wat for the results", res[0].MSG)
+		})
 
 		// TODO: amdin can not vote
 

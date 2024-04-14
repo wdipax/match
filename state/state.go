@@ -8,14 +8,15 @@ type Core interface {
 
 type IsAdmin func(userID string) bool
 
-type ActionTeamMSG func(teamName string) string
+type ResponseMSG func(optional string) string
 
 type StateSettings struct {
 	IsAdmin                IsAdmin
-	StartTeamMSG           ActionTeamMSG
-	JoinTeamMSG            ActionTeamMSG
-	AdminCanNotJoinTeamMSG ActionTeamMSG
-	EndTeamMSG             ActionTeamMSG
+	StartTeamMSG           ResponseMSG
+	JoinTeamMSG            ResponseMSG
+	AdminCanNotJoinTeamMSG ResponseMSG
+	EndTeamMSG             ResponseMSG
+	VoteReceivedMSG        ResponseMSG
 	Core                   Core
 	MaleTeamName           string
 	FemaleTeamName         string
@@ -23,17 +24,19 @@ type StateSettings struct {
 
 type State struct {
 	isAdmin                IsAdmin
-	startTeamMSG           ActionTeamMSG
-	joinTeamMSG            ActionTeamMSG
-	adminCanNotJoinTeamMSG ActionTeamMSG
-	endTeamMSG             ActionTeamMSG
+	startTeamMSG           ResponseMSG
+	joinTeamMSG            ResponseMSG
+	adminCanNotJoinTeamMSG ResponseMSG
+	endTeamMSG             ResponseMSG
+	voteReceivedMSG        ResponseMSG
 	core                   Core
 	maleTeamName           string
 	femaleTeamName         string
 
-	teams        []*team
-	adminTeams   map[string][]*team
-	adminSession map[string]*session
+	sessions    []*session
+	teams       []*team
+	adminTeams  map[string][]*team
+	userSession map[string]*session
 }
 
 func New(s StateSettings) *State {
@@ -43,17 +46,19 @@ func New(s StateSettings) *State {
 		joinTeamMSG:            s.JoinTeamMSG,
 		adminCanNotJoinTeamMSG: s.AdminCanNotJoinTeamMSG,
 		endTeamMSG:             s.EndTeamMSG,
+		voteReceivedMSG:        s.VoteReceivedMSG,
 		core:                   s.Core,
 		maleTeamName:           s.MaleTeamName,
 		femaleTeamName:         s.FemaleTeamName,
 
-		adminTeams:   make(map[string][]*team),
-		adminSession: make(map[string]*session),
+		adminTeams:  make(map[string][]*team),
+		userSession: make(map[string]*session),
 	}
 }
 
 type team struct {
 	id           string
+	sessionID    string
 	name         string
 	registration bool
 }
@@ -62,9 +67,11 @@ type sessionPhase int
 
 const (
 	teamManagement sessionPhase = iota
+	voting
 )
 
 type session struct {
+	id    string
 	phase sessionPhase
 }
 
@@ -74,9 +81,10 @@ type Response struct {
 }
 
 func (s *State) Input(userID string, payload string) []*Response {
+	ss := s.userSession[userID]
+
 	if s.isAdmin(userID) {
-		ss, ok := s.adminSession[userID]
-		if !ok {
+		if ss == nil {
 			return nil
 		}
 
@@ -92,6 +100,15 @@ func (s *State) Input(userID string, payload string) []*Response {
 		return nil
 	}
 
+	if ss != nil && ss.phase == voting {
+		return []*Response{
+			{
+				UserID: userID,
+				MSG:    s.voteReceivedMSG(""),
+			},
+		}
+	}
+
 	t := teamByID(s.teams, payload)
 	if t == nil {
 		return nil
@@ -100,6 +117,13 @@ func (s *State) Input(userID string, payload string) []*Response {
 	if !t.registration {
 		return nil
 	}
+
+	ss = sessionByID(s.sessions, t.sessionID)
+	if ss == nil {
+		return nil
+	}
+
+	s.userSession[userID] = ss
 
 	return []*Response{
 		{
@@ -118,13 +142,16 @@ func (s *State) NewSession(userID string) []*Response {
 		return nil
 	}
 
-	s.core.NewSession()
+	sessionID := s.core.NewSession()
 
 	ss := &session{
+		id:    sessionID,
 		phase: teamManagement,
 	}
 
-	s.adminSession[userID] = ss
+	s.sessions = append(s.sessions, ss)
+
+	s.userSession[userID] = ss
 
 	return nil
 }
@@ -134,7 +161,7 @@ func (s *State) StartMaleRegistration(userID string) []*Response {
 		return nil
 	}
 
-	_, ok := s.adminSession[userID]
+	ss, ok := s.userSession[userID]
 	if !ok {
 		return nil
 	}
@@ -143,6 +170,7 @@ func (s *State) StartMaleRegistration(userID string) []*Response {
 
 	t := &team{
 		id:           teamID,
+		sessionID:    ss.id,
 		name:         s.maleTeamName,
 		registration: true,
 	}
@@ -185,10 +213,16 @@ func (s *State) StartFemaleRegistration(userID string) []*Response {
 		return nil
 	}
 
+	ss, ok := s.userSession[userID]
+	if !ok {
+		return nil
+	}
+
 	teamID := s.core.NewTeam(s.femaleTeamName)
 
 	t := &team{
 		id:           teamID,
+		sessionID:    ss.id,
 		name:         s.femaleTeamName,
 		registration: true,
 	}
@@ -239,6 +273,13 @@ func (s *State) StartVoting(userID string) []*Response {
 		return nil
 	}
 
+	ss, ok := s.userSession[userID]
+	if !ok {
+		return nil
+	}
+
+	ss.phase = voting
+
 	return []*Response{
 		{
 			UserID: userID,
@@ -268,6 +309,18 @@ func teamByName(teams []*team, name string) *team {
 	for _, t = range teams {
 		if t.name == name {
 			return t
+		}
+	}
+
+	return nil
+}
+
+func sessionByID(sessions []*session, id string) *session {
+	var ss *session
+
+	for _, ss = range sessions {
+		if ss.id == id {
+			return ss
 		}
 	}
 
