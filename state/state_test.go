@@ -177,12 +177,16 @@ func TestState(t *testing.T) {
 					MaleTeamName: "male team",
 				})
 
-				teamID := startTeamRegistration(t, helperSettings{
+				hs := helperSettings{
 					state:    st,
 					teamType: male,
 					core:     &c,
 					adminID:  a.adminID,
-				})
+				}
+
+				startSession(t, hs)
+
+				teamID := startTeamRegistration(t, hs)
 
 				res := st.Input("user", teamID)
 
@@ -208,12 +212,16 @@ func TestState(t *testing.T) {
 					FemaleTeamName: "female team",
 				})
 
-				teamID := startTeamRegistration(t, helperSettings{
+				hs := helperSettings{
 					state:    st,
 					teamType: female,
 					core:     &c,
 					adminID:  a.adminID,
-				})
+				}
+
+				startSession(t, hs)
+
+				teamID := startTeamRegistration(t, hs)
 
 				res := st.Input("user", teamID)
 
@@ -242,12 +250,16 @@ func TestState(t *testing.T) {
 				MaleTeamName: "male team",
 			})
 
-			teamID := startTeamRegistration(t, helperSettings{
+			hs := helperSettings{
 				state:    st,
 				teamType: male,
 				core:     &c,
 				adminID:  a.adminID,
-			})
+			}
+
+			startSession(t, hs)
+
+			teamID := startTeamRegistration(t, hs)
 
 			res := st.Input("admin", teamID)
 
@@ -276,12 +288,16 @@ func TestState(t *testing.T) {
 					MaleTeamName: "male team",
 				})
 
-				startTeamRegistration(t, helperSettings{
+				hs := helperSettings{
 					state:    st,
 					teamType: male,
 					core:     &c,
 					adminID:  a.adminID,
-				})
+				}
+
+				startSession(t, hs)
+
+				startTeamRegistration(t, hs)
 
 				res := st.EndMaleRegistration("admin")
 
@@ -307,12 +323,16 @@ func TestState(t *testing.T) {
 					FemaleTeamName: "female team",
 				})
 
-				startTeamRegistration(t, helperSettings{
+				hs := helperSettings{
 					state:    st,
 					teamType: female,
 					core:     &c,
 					adminID:  a.adminID,
-				})
+				}
+
+				startSession(t, hs)
+
+				startTeamRegistration(t, hs)
 
 				res := st.EndFemaleRegistration("admin")
 
@@ -342,12 +362,16 @@ func TestState(t *testing.T) {
 					MaleTeamName: "male team",
 				})
 
-				startTeamRegistration(t, helperSettings{
+				hs := helperSettings{
 					state:    st,
 					teamType: female,
 					core:     &c,
 					adminID:  a.adminID,
-				})
+				}
+
+				startSession(t, hs)
+
+				startTeamRegistration(t, hs)
 
 				assert.Empty(t, st.EndMaleRegistration("user"))
 			})
@@ -368,12 +392,16 @@ func TestState(t *testing.T) {
 					FemaleTeamName: "female team",
 				})
 
-				startTeamRegistration(t, helperSettings{
+				hs := helperSettings{
 					state:    st,
 					teamType: female,
 					core:     &c,
 					adminID:  a.adminID,
-				})
+				}
+
+				startSession(t, hs)
+
+				startTeamRegistration(t, hs)
 
 				assert.Empty(t, st.EndFemaleRegistration("user"))
 			})
@@ -419,12 +447,16 @@ func TestState(t *testing.T) {
 						MaleTeamName: "male team",
 					})
 
-					teamID := startTeamRegistration(t, helperSettings{
+					hs := helperSettings{
 						state:    st,
 						teamType: male,
 						core:     &c,
 						adminID:  a.adminID,
-					})
+					}
+
+					startSession(t, hs)
+
+					teamID := startTeamRegistration(t, hs)
 
 					res := st.EndMaleRegistration("admin")
 
@@ -449,12 +481,16 @@ func TestState(t *testing.T) {
 						FemaleTeamName: "female team",
 					})
 
-					teamID := startTeamRegistration(t, helperSettings{
+					hs := helperSettings{
 						state:    st,
 						teamType: female,
 						core:     &c,
 						adminID:  a.adminID,
-					})
+					}
+
+					startSession(t, hs)
+
+					teamID := startTeamRegistration(t, hs)
 
 					res := st.EndFemaleRegistration("admin")
 
@@ -491,7 +527,22 @@ func TestState(t *testing.T) {
 			assert.NotEmpty(t, res)
 		})
 
-		// TODO: all users receive polls
+		// t.Run("all users receive polls", func(t *testing.T) {
+		// 	t.Parallel()
+
+		// 	var c fakeCore
+
+		// 	a := fakeIsAdmin{
+		// 		adminID: "admin",
+		// 	}
+
+		// 	st := state.New(state.StateSettings{
+		// 		IsAdmin:     a.IsAdmin,
+		// 		JoinTeamMSG: joinTeamMSG,
+		// 		Core:        &c,
+		// 	})
+
+		// })
 
 		t.Run("user can not start voting", func(t *testing.T) {
 			t.Parallel()
@@ -531,12 +582,16 @@ func TestState(t *testing.T) {
 				},
 			})
 
-			teamID := startTeamRegistration(t, helperSettings{
+			hs := helperSettings{
 				state:    st,
 				teamType: male,
 				core:     &c,
 				adminID:  "admin",
-			})
+			}
+
+			startSession(t, hs)
+
+			teamID := startTeamRegistration(t, hs)
 
 			st.Input("user", teamID)
 
@@ -611,7 +666,7 @@ func TestState(t *testing.T) {
 			assert.Equal(t, "session ended, users received their mathes", res[0].MSG)
 		})
 
-		t.Run("user can not end the session",func(t *testing.T) {
+		t.Run("user can not end the session", func(t *testing.T) {
 			t.Parallel()
 
 			var c fakeCore
@@ -649,10 +704,14 @@ type helperSettings struct {
 	adminID  string
 }
 
-func startTeamRegistration(tb testing.TB, settings helperSettings) string {
+func startSession(tb testing.TB, settings helperSettings) {
 	tb.Helper()
 
 	settings.state.NewSession(settings.adminID)
+}
+
+func startTeamRegistration(tb testing.TB, settings helperSettings) string {
+	tb.Helper()
 
 	defer func(original string) {
 		settings.core.newTeamID = original
