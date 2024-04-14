@@ -99,6 +99,8 @@ func TestState(t *testing.T) {
 					Core:    &c,
 				})
 
+				st.NewSession("admin")
+
 				res := st.StartFemaleRegistration("admin")
 
 				require.Len(t, res, 1)
@@ -462,6 +464,45 @@ func TestState(t *testing.T) {
 				})
 			})
 		})
+	})
+
+	t.Run("voting", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("admin can start voting", func(t *testing.T) {
+			t.Parallel()
+
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin:        a.IsAdmin,
+				JoinTeamMSG:    joinTeamMSG,
+				Core:           &c,
+				FemaleTeamName: "female team",
+			})
+
+			res := st.StartVoting("admin")
+
+			assert.NotEmpty(t, res)
+		})
+
+		// TODO: user can not start voting
+
+		// TODO: user can vote
+
+		// TODO: amdin can not vote
+
+		// TODO: voting ends
+		// TODO: when all user has voted
+		// TODO: when admin ends voting
+
+		// TODO: users receive their matches
+
+		// TODO: admin does not receive matches
 	})
 }
 

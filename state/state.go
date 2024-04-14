@@ -235,7 +235,11 @@ func (s *State) ChangeUserNumber(userID string) []*Response {
 }
 
 func (s *State) StartVoting(userID string) []*Response {
-	return nil
+	return []*Response{
+		{
+			UserID: userID,
+		},
+	}
 }
 
 func (s *State) EndSession(userID string) []*Response {
