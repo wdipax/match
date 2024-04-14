@@ -18,6 +18,7 @@ type StateSettings struct {
 	EndTeamMSG             ResponseMSG
 	VoteReceivedMSG        ResponseMSG
 	AdminCanNotVoteMSG     ResponseMSG
+	AdminEndSessionMSG     ResponseMSG
 	Core                   Core
 	MaleTeamName           string
 	FemaleTeamName         string
@@ -31,6 +32,7 @@ type State struct {
 	endTeamMSG             ResponseMSG
 	voteReceivedMSG        ResponseMSG
 	adminCanNotVoteMSG     ResponseMSG
+	adminEndSessionMSG     ResponseMSG
 	core                   Core
 	maleTeamName           string
 	femaleTeamName         string
@@ -50,6 +52,7 @@ func New(s StateSettings) *State {
 		endTeamMSG:             s.EndTeamMSG,
 		voteReceivedMSG:        s.VoteReceivedMSG,
 		adminCanNotVoteMSG:     s.AdminCanNotVoteMSG,
+		adminEndSessionMSG:     s.AdminEndSessionMSG,
 		core:                   s.Core,
 		maleTeamName:           s.MaleTeamName,
 		femaleTeamName:         s.FemaleTeamName,
@@ -300,7 +303,12 @@ func (s *State) StartVoting(userID string) []*Response {
 }
 
 func (s *State) EndSession(userID string) []*Response {
-	return nil
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    s.adminEndSessionMSG(""),
+		},
+	}
 }
 
 func teamByID(teams []*team, id string) *team {

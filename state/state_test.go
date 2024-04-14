@@ -584,7 +584,34 @@ func TestState(t *testing.T) {
 
 		// TODO: voting ends
 		// TODO: when all user has voted
-		// TODO: when admin ends voting
+
+		t.Run("when admin ends the session", func(t *testing.T) {
+			t.Parallel()
+
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin:     a.IsAdmin,
+				JoinTeamMSG: joinTeamMSG,
+				Core:        &c,
+				AdminEndSessionMSG: func(optional string) string {
+					return "session ended, users received their mathes"
+				},
+			})
+
+			res := st.EndSession("admin")
+
+			require.Len(t, res, 1)
+
+			assert.Equal(t, "admin", res[0].UserID)
+			assert.Equal(t, "session ended, users received their mathes", res[0].MSG)
+		})
+
+		// TODO: user can not end the session
 
 		// TODO: users receive their matches
 
