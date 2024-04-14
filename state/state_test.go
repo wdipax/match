@@ -611,7 +611,23 @@ func TestState(t *testing.T) {
 			assert.Equal(t, "session ended, users received their mathes", res[0].MSG)
 		})
 
-		// TODO: user can not end the session
+		t.Run("user can not end the session",func(t *testing.T) {
+			t.Parallel()
+
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin:     a.IsAdmin,
+				JoinTeamMSG: joinTeamMSG,
+				Core:        &c,
+			})
+
+			assert.Empty(t, st.EndSession("user"))
+		})
 
 		// TODO: users receive their matches
 

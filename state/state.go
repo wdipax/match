@@ -303,6 +303,10 @@ func (s *State) StartVoting(userID string) []*Response {
 }
 
 func (s *State) EndSession(userID string) []*Response {
+	if !s.isAdmin(userID) {
+		return nil
+	}
+	
 	return []*Response{
 		{
 			UserID: userID,
