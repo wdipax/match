@@ -237,6 +237,92 @@ func TestState(t *testing.T) {
 				assert.Contains(t, res[0].MSG, "female team")
 			})
 		})
+
+		t.Run("user can not join a team", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("before the registration started", func(t *testing.T) {
+				t.Parallel()
+
+				var c fakeCore
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin:     a.IsAdmin,
+					JoinTeamMSG: joinTeamMSG,
+					Core:        &c,
+				})
+
+				assert.Empty(t, st.Input("user", "team_id"))
+			})
+
+			t.Run("after the registration ended", func(t *testing.T) {
+				t.Parallel()
+
+				t.Run("male", func(t *testing.T) {
+					t.Parallel()
+
+					var c fakeCore
+
+					a := fakeIsAdmin{
+						adminID: "admin",
+					}
+
+					st := state.New(state.StateSettings{
+						IsAdmin:      a.IsAdmin,
+						JoinTeamMSG:  joinTeamMSG,
+						Core:         &c,
+						MaleTeamName: "male team",
+					})
+
+					teamID := startTeamRegistration(t, helperSettings{
+						state:    st,
+						teamType: male,
+						core:     &c,
+						adminID:  a.adminID,
+					})
+
+					res := st.EndMaleRegistration("admin")
+
+					require.Len(t, res, 1)
+
+					assert.Empty(t, st.Input("user", teamID))
+				})
+
+				t.Run("female", func(t *testing.T) {
+					t.Parallel()
+
+					var c fakeCore
+
+					a := fakeIsAdmin{
+						adminID: "admin",
+					}
+
+					st := state.New(state.StateSettings{
+						IsAdmin:        a.IsAdmin,
+						JoinTeamMSG:    joinTeamMSG,
+						Core:           &c,
+						FemaleTeamName: "female team",
+					})
+
+					teamID := startTeamRegistration(t, helperSettings{
+						state:    st,
+						teamType: female,
+						core:     &c,
+						adminID:  a.adminID,
+					})
+
+					res := st.EndFemaleRegistration("admin")
+
+					require.Len(t, res, 1)
+
+					assert.Empty(t, st.Input("user", teamID))
+				})
+			})
+		})
 	})
 }
 

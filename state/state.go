@@ -25,7 +25,8 @@ type State struct {
 	maleTeamName   string
 	femaleTeamName string
 
-	teams []*team
+	teams      []*team
+	adminTeams map[string][]*team
 }
 
 func New(s StateSettings) *State {
@@ -35,12 +36,15 @@ func New(s StateSettings) *State {
 		core:           s.Core,
 		maleTeamName:   s.MaleTeamName,
 		femaleTeamName: s.FemaleTeamName,
+
+		adminTeams: make(map[string][]*team),
 	}
 }
 
 type team struct {
-	id   string
-	name string
+	id           string
+	name         string
+	registration bool
 }
 
 type Response struct {
@@ -53,15 +57,12 @@ func (s *State) Input(userID string, payload string) []*Response {
 		return nil
 	}
 
-	var t *team
-
-	for _, v := range s.teams {
-		if v.id == payload {
-			t = v
-		}
+	t := teamByID(s.teams, payload)
+	if t == nil {
+		return nil
 	}
 
-	if t == nil {
+	if !t.registration {
 		return nil
 	}
 
@@ -92,10 +93,15 @@ func (s *State) StartMaleRegistration(userID string) []*Response {
 
 	teamID := s.core.NewTeam(s.maleTeamName)
 
-	s.teams = append(s.teams, &team{
-		id:   teamID,
-		name: s.maleTeamName,
-	})
+	t := &team{
+		id:           teamID,
+		name:         s.maleTeamName,
+		registration: true,
+	}
+
+	s.teams = append(s.teams, t)
+
+	s.adminTeams[userID] = append(s.adminTeams[userID], t)
 
 	return []*Response{
 		{
@@ -106,10 +112,22 @@ func (s *State) StartMaleRegistration(userID string) []*Response {
 }
 
 func (s *State) EndMaleRegistration(userID string) []*Response {
+	teams, ok := s.adminTeams[userID]
+	if !ok {
+		return nil
+	}
+
+	t := teamByName(teams, s.maleTeamName)
+	if t == nil {
+		return nil
+	}
+
+	t.registration = false
+
 	return []*Response{
 		{
 			UserID: userID,
-			MSG:    s.maleTeamName,
+			MSG:    t.name,
 		},
 	}
 }
@@ -121,10 +139,15 @@ func (s *State) StartFemaleRegistration(userID string) []*Response {
 
 	teamID := s.core.NewTeam(s.femaleTeamName)
 
-	s.teams = append(s.teams, &team{
-		id:   teamID,
-		name: s.femaleTeamName,
-	})
+	t := &team{
+		id:           teamID,
+		name:         s.femaleTeamName,
+		registration: true,
+	}
+
+	s.teams = append(s.teams, t)
+
+	s.adminTeams[userID] = append(s.adminTeams[userID], t)
 
 	return []*Response{
 		{
@@ -135,10 +158,22 @@ func (s *State) StartFemaleRegistration(userID string) []*Response {
 }
 
 func (s *State) EndFemaleRegistration(userID string) []*Response {
+	teams, ok := s.adminTeams[userID]
+	if !ok {
+		return nil
+	}
+
+	t := teamByName(teams, s.femaleTeamName)
+	if t == nil {
+		return nil
+	}
+
+	t.registration = false
+
 	return []*Response{
 		{
 			UserID: userID,
-			MSG:    s.femaleTeamName,
+			MSG:    t.name,
 		},
 	}
 }
@@ -156,5 +191,29 @@ func (s *State) StartVoting(userID string) []*Response {
 }
 
 func (s *State) EndSession(userID string) []*Response {
+	return nil
+}
+
+func teamByID(teams []*team, id string) *team {
+	var t *team
+
+	for _, t = range teams {
+		if t.id == id {
+			return t
+		}
+	}
+
+	return nil
+}
+
+func teamByName(teams []*team, name string) *team {
+	var t *team
+
+	for _, t = range teams {
+		if t.name == name {
+			return t
+		}
+	}
+
 	return nil
 }
