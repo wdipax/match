@@ -106,6 +106,12 @@ func TestState(t *testing.T) {
 			})
 		})
 
+		t.Run("user can not start registration to a team", func(t *testing.T) {
+			t.Parallel()
+
+			t.Fatal("TODO")
+		})
+
 		t.Run("user can join a team", func(t *testing.T) {
 			t.Parallel()
 
@@ -172,6 +178,12 @@ func TestState(t *testing.T) {
 			})
 		})
 
+		t.Run("admin can not join a team", func(t *testing.T) {
+			t.Parallel()
+
+			t.Fatal("TODO")
+		})
+
 		t.Run("admin can end registration to a team", func(t *testing.T) {
 			t.Parallel()
 
@@ -236,6 +248,12 @@ func TestState(t *testing.T) {
 				assert.Equal(t, "admin", res[0].UserID)
 				assert.Contains(t, res[0].MSG, "female team")
 			})
+		})
+
+		t.Run("user can not end registration to a team", func(t *testing.T) {
+			t.Parallel()
+
+			t.Fatal("TODO")
 		})
 
 		t.Run("user can not join a team", func(t *testing.T) {
