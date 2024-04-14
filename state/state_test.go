@@ -479,10 +479,9 @@ func TestState(t *testing.T) {
 			}
 
 			st := state.New(state.StateSettings{
-				IsAdmin:        a.IsAdmin,
-				JoinTeamMSG:    joinTeamMSG,
-				Core:           &c,
-				FemaleTeamName: "female team",
+				IsAdmin:     a.IsAdmin,
+				JoinTeamMSG: joinTeamMSG,
+				Core:        &c,
 			})
 
 			res := st.StartVoting("admin")
@@ -491,6 +490,25 @@ func TestState(t *testing.T) {
 		})
 
 		// TODO: user can not start voting
+		t.Run("user can not start voting", func(t *testing.T) {
+			t.Parallel()
+
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin:     a.IsAdmin,
+				JoinTeamMSG: joinTeamMSG,
+				Core:        &c,
+			})
+
+			res := st.StartVoting("user")
+
+			assert.Empty(t, res)
+		})
 
 		// TODO: user can vote
 
