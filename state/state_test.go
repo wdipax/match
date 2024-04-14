@@ -552,7 +552,35 @@ func TestState(t *testing.T) {
 			assert.Equal(t, "your vote is received, wat for the results", res[0].MSG)
 		})
 
-		// TODO: amdin can not vote
+		t.Run("amdin can not vote", func(t *testing.T) {
+			t.Parallel()
+
+			var c fakeCore
+
+			a := fakeIsAdmin{
+				adminID: "admin",
+			}
+
+			st := state.New(state.StateSettings{
+				IsAdmin:     a.IsAdmin,
+				JoinTeamMSG: joinTeamMSG,
+				Core:        &c,
+				AdminCanNotVoteMSG: func(optional string) string {
+					return "you are an admin, you can not vote"
+				},
+			})
+
+			st.NewSession("admin")
+
+			st.StartVoting("admin")
+
+			res := st.Input("admin", "vote")
+
+			require.Len(t, res, 1)
+
+			assert.Equal(t, "admin", res[0].UserID)
+			assert.Equal(t, "you are an admin, you can not vote", res[0].MSG)
+		})
 
 		// TODO: voting ends
 		// TODO: when all user has voted

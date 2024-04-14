@@ -17,6 +17,7 @@ type StateSettings struct {
 	AdminCanNotJoinTeamMSG ResponseMSG
 	EndTeamMSG             ResponseMSG
 	VoteReceivedMSG        ResponseMSG
+	AdminCanNotVoteMSG     ResponseMSG
 	Core                   Core
 	MaleTeamName           string
 	FemaleTeamName         string
@@ -29,6 +30,7 @@ type State struct {
 	adminCanNotJoinTeamMSG ResponseMSG
 	endTeamMSG             ResponseMSG
 	voteReceivedMSG        ResponseMSG
+	adminCanNotVoteMSG     ResponseMSG
 	core                   Core
 	maleTeamName           string
 	femaleTeamName         string
@@ -47,6 +49,7 @@ func New(s StateSettings) *State {
 		adminCanNotJoinTeamMSG: s.AdminCanNotJoinTeamMSG,
 		endTeamMSG:             s.EndTeamMSG,
 		voteReceivedMSG:        s.VoteReceivedMSG,
+		adminCanNotVoteMSG:     s.AdminCanNotVoteMSG,
 		core:                   s.Core,
 		maleTeamName:           s.MaleTeamName,
 		femaleTeamName:         s.FemaleTeamName,
@@ -93,6 +96,15 @@ func (s *State) Input(userID string, payload string) []*Response {
 				{
 					UserID: userID,
 					MSG:    s.adminCanNotJoinTeamMSG(""),
+				},
+			}
+		}
+
+		if ss.phase == voting {
+			return []*Response{
+				{
+					UserID: userID,
+					MSG:    s.adminCanNotVoteMSG(""),
 				},
 			}
 		}
