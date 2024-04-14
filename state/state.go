@@ -106,7 +106,12 @@ func (s *State) StartMaleRegistration(userID string) []*Response {
 }
 
 func (s *State) EndMaleRegistration(userID string) []*Response {
-	return nil
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    s.maleTeamName,
+		},
+	}
 }
 
 func (s *State) StartFemaleRegistration(userID string) []*Response {
