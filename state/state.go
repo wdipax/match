@@ -12,7 +12,8 @@ type ResponseMSG func(optional string) string
 
 type StateSettings struct {
 	IsAdmin                IsAdmin
-	StartTeamMSG           ResponseMSG
+	StartSessionMSG        ResponseMSG
+	// StartTeamMSG           ResponseMSG
 	JoinTeamMSG            ResponseMSG
 	AdminCanNotJoinTeamMSG ResponseMSG
 	EndTeamMSG             ResponseMSG
@@ -26,7 +27,8 @@ type StateSettings struct {
 
 type State struct {
 	isAdmin                IsAdmin
-	startTeamMSG           ResponseMSG
+	startSessionMSG        ResponseMSG
+	// startTeamMSG           ResponseMSG
 	joinTeamMSG            ResponseMSG
 	adminCanNotJoinTeamMSG ResponseMSG
 	endTeamMSG             ResponseMSG
@@ -46,7 +48,8 @@ type State struct {
 func New(s StateSettings) *State {
 	return &State{
 		isAdmin:                s.IsAdmin,
-		startTeamMSG:           s.StartTeamMSG,
+		startSessionMSG:        s.StartSessionMSG,
+		// startTeamMSG:           s.StartTeamMSG,
 		joinTeamMSG:            s.JoinTeamMSG,
 		adminCanNotJoinTeamMSG: s.AdminCanNotJoinTeamMSG,
 		endTeamMSG:             s.EndTeamMSG,
@@ -168,7 +171,12 @@ func (s *State) NewSession(userID string) []*Response {
 
 	s.userSession[userID] = ss
 
-	return nil
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    s.startSessionMSG(""),
+		},
+	}
 }
 
 func (s *State) StartMaleRegistration(userID string) []*Response {
@@ -218,7 +226,7 @@ func (s *State) EndMaleRegistration(userID string) []*Response {
 	return []*Response{
 		{
 			UserID: userID,
-			MSG:    t.name,
+			MSG:    s.endTeamMSG(t.name),
 		},
 	}
 }
@@ -270,7 +278,7 @@ func (s *State) EndFemaleRegistration(userID string) []*Response {
 	return []*Response{
 		{
 			UserID: userID,
-			MSG:    t.name,
+			MSG:    s.endTeamMSG(t.name),
 		},
 	}
 }
@@ -306,7 +314,7 @@ func (s *State) EndSession(userID string) []*Response {
 	if !s.isAdmin(userID) {
 		return nil
 	}
-	
+
 	return []*Response{
 		{
 			UserID: userID,
