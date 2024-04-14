@@ -19,10 +19,6 @@ func TestState(t *testing.T) {
 
 			ss, _ := stateSettings()
 
-			ss.StartSessionMSG = func(optional string) string {
-				return "new session started"
-			}
-
 			st := state.New(ss)
 
 			res := st.NewSession("admin")
@@ -30,22 +26,15 @@ func TestState(t *testing.T) {
 			require.Len(t, res, 1)
 
 			assert.Equal(t, "admin", res[0].UserID)
-			assert.Equal(t, "new session started", res[0].MSG)
+			assert.Equal(t, "session started", res[0].MSG)
 		})
 
 		t.Run("user can not start a new session", func(t *testing.T) {
 			t.Parallel()
 
-			var c fakeCore
+			ss, _ := stateSettings()
 
-			a := fakeIsAdmin{
-				adminID: "admin",
-			}
-
-			st := state.New(state.StateSettings{
-				IsAdmin: a.IsAdmin,
-				Core:    &c,
-			})
+			st := state.New(ss)
 
 			assert.Empty(t, st.NewSession("user"))
 		})
@@ -58,19 +47,11 @@ func TestState(t *testing.T) {
 			t.Run("male team", func(t *testing.T) {
 				t.Parallel()
 
-				c := fakeCore{
-					newTeamID: "male_team_id",
-				}
+				ss, c := stateSettings()
 
-				a := fakeIsAdmin{
-					adminID: "admin",
-				}
+				c.newTeamID = "male_team_id"
 
-				st := state.New(state.StateSettings{
-					IsAdmin:         a.IsAdmin,
-					Core:            &c,
-					StartSessionMSG: sessionStartedMSGStub,
-				})
+				st := state.New(ss)
 
 				startSession(t, helperSettings{
 					state: st,
@@ -87,23 +68,11 @@ func TestState(t *testing.T) {
 			t.Run("female team", func(t *testing.T) {
 				t.Parallel()
 
-				c := fakeCore{
-					newTeamID: "female_team_id",
-				}
+				ss, c := stateSettings()
 
-				a := fakeIsAdmin{
-					adminID: "admin",
-				}
+				c.newTeamID = "female_team_id"
 
-				st := state.New(state.StateSettings{
-					IsAdmin:         a.IsAdmin,
-					Core:            &c,
-					StartSessionMSG: sessionStartedMSGStub,
-				})
-
-				startSession(t, helperSettings{
-					state: st,
-				})
+				st := state.New(ss)
 
 				startSession(t, helperSettings{
 					state: st,
@@ -132,30 +101,21 @@ func TestState(t *testing.T) {
 					state: st,
 				})
 
-				res := st.StartMaleRegistration("user")
-
-				assert.Empty(t, res)
+				assert.Empty(t, st.StartMaleRegistration("user"))
 			})
 
 			t.Run("female team", func(t *testing.T) {
 				t.Parallel()
 
-				c := fakeCore{
-					newTeamID: "female_team_id",
-				}
+				ss, _ := stateSettings()
 
-				a := fakeIsAdmin{
-					adminID: "admin",
-				}
+				st := state.New(ss)
 
-				st := state.New(state.StateSettings{
-					IsAdmin: a.IsAdmin,
-					Core:    &c,
+				startSession(t, helperSettings{
+					state: st,
 				})
 
-				res := st.StartFemaleRegistration("user")
-
-				assert.Empty(t, res)
+				assert.Empty(t, st.StartFemaleRegistration("user"))
 			})
 		})
 
@@ -218,10 +178,6 @@ func TestState(t *testing.T) {
 
 			ss, c := stateSettings()
 
-			ss.AdminCanNotJoinTeamMSG = func(string) string {
-				return "you are admin, you can't join the team"
-			}
-
 			st := state.New(ss)
 
 			hs := helperSettings{
@@ -239,7 +195,7 @@ func TestState(t *testing.T) {
 			require.Len(t, res, 1)
 
 			assert.Equal(t, "admin", res[0].UserID)
-			assert.Equal(t, "you are admin, you can't join the team", res[0].MSG)
+			assert.Equal(t, "admin can not join a team", res[0].MSG)
 		})
 
 		t.Run("admin can end registration to a team", func(t *testing.T) {
@@ -346,19 +302,59 @@ func TestState(t *testing.T) {
 			t.Run("before the registration started", func(t *testing.T) {
 				t.Parallel()
 
-				var c fakeCore
+				t.Run("session is just created", func(t *testing.T) {
+					t.Parallel()
 
-				a := fakeIsAdmin{
-					adminID: "admin",
-				}
+					ss, _ := stateSettings()
 
-				st := state.New(state.StateSettings{
-					IsAdmin:     a.IsAdmin,
-					JoinTeamMSG: joinTeamMSG,
-					Core:        &c,
+					st := state.New(ss)
+
+					startSession(t, helperSettings{
+						state: st,
+					})
+
+					assert.Empty(t, st.Input("user", "team_id"))
 				})
 
-				assert.Empty(t, st.Input("user", "team_id"))
+				t.Run("female started, male not", func(t *testing.T) {
+					t.Parallel()
+
+					ss, c := stateSettings()
+
+					st := state.New(ss)
+
+					hs := helperSettings{
+						state:    st,
+						teamType: female,
+						core:     c,
+					}
+
+					startSession(t, hs)
+
+					startTeamRegistration(t, hs)
+
+					assert.Empty(t, st.Input("user", "male_team_id"))
+				})
+
+				t.Run("male started, female not", func(t *testing.T) {
+					t.Parallel()
+
+					ss, c := stateSettings()
+
+					st := state.New(ss)
+
+					hs := helperSettings{
+						state:    st,
+						teamType: male,
+						core:     c,
+					}
+
+					startSession(t, hs)
+
+					startTeamRegistration(t, hs)
+
+					assert.Empty(t, st.Input("user", "female_team_id"))
+				})
 			})
 
 			t.Run("after the registration ended", func(t *testing.T) {
@@ -381,9 +377,7 @@ func TestState(t *testing.T) {
 
 					teamID := startTeamRegistration(t, hs)
 
-					res := st.EndMaleRegistration("admin")
-
-					require.Len(t, res, 1)
+					endTeamRegistration(t, hs)
 
 					assert.Empty(t, st.Input("user", teamID))
 				})
@@ -453,21 +447,11 @@ func TestState(t *testing.T) {
 		t.Run("user can not start voting", func(t *testing.T) {
 			t.Parallel()
 
-			var c fakeCore
+			ss, _ := stateSettings()
 
-			a := fakeIsAdmin{
-				adminID: "admin",
-			}
+			st := state.New(ss)
 
-			st := state.New(state.StateSettings{
-				IsAdmin:     a.IsAdmin,
-				JoinTeamMSG: joinTeamMSG,
-				Core:        &c,
-			})
-
-			res := st.StartVoting("user")
-
-			assert.Empty(t, res)
+			assert.Empty(t, st.StartVoting("user"))
 		})
 
 		t.Run("user can vote", func(t *testing.T) {
@@ -530,43 +514,24 @@ func TestState(t *testing.T) {
 		t.Run("when admin ends the session", func(t *testing.T) {
 			t.Parallel()
 
-			var c fakeCore
+			ss, _ := stateSettings()
 
-			a := fakeIsAdmin{
-				adminID: "admin",
-			}
-
-			st := state.New(state.StateSettings{
-				IsAdmin:     a.IsAdmin,
-				JoinTeamMSG: joinTeamMSG,
-				Core:        &c,
-				AdminEndSessionMSG: func(optional string) string {
-					return "session ended, users received their mathes"
-				},
-			})
+			st := state.New(ss)
 
 			res := st.EndSession("admin")
 
 			require.Len(t, res, 1)
 
 			assert.Equal(t, "admin", res[0].UserID)
-			assert.Equal(t, "session ended, users received their mathes", res[0].MSG)
+			assert.Equal(t, "session ended", res[0].MSG)
 		})
 
 		t.Run("user can not end the session", func(t *testing.T) {
 			t.Parallel()
 
-			var c fakeCore
+			ss, _ := stateSettings()
 
-			a := fakeIsAdmin{
-				adminID: "admin",
-			}
-
-			st := state.New(state.StateSettings{
-				IsAdmin:     a.IsAdmin,
-				JoinTeamMSG: joinTeamMSG,
-				Core:        &c,
-			})
+			st := state.New(ss)
 
 			assert.Empty(t, st.EndSession("user"))
 		})
@@ -649,14 +614,6 @@ func endTeamRegistration(tb testing.TB, settings helperSettings) {
 	require.Equal(tb, msg, res[0].MSG)
 }
 
-type fakeIsAdmin struct {
-	adminID string
-}
-
-func (a fakeIsAdmin) IsAdmin(userID string) bool {
-	return a.adminID == userID
-}
-
 type fakeCore struct {
 	newTeamID string
 }
@@ -669,14 +626,6 @@ func (c *fakeCore) NewTeam(name string) string {
 	return c.newTeamID
 }
 
-func joinTeamMSG(teamName string) string {
-	return "you joined the team " + teamName
-}
-
-func sessionStartedMSGStub(string) string {
-	return "session started"
-}
-
 func stateSettings() (state.StateSettings, *fakeCore) {
 	var core fakeCore
 
@@ -685,10 +634,11 @@ func stateSettings() (state.StateSettings, *fakeCore) {
 		Core:                   &core,
 		StartSessionMSG:        func(optional string) string { return "session started" },
 		EndTeamMSG:             func(optional string) string { return optional + " registration ended" },
-		AdminCanNotJoinTeamMSG: func(optional string) string { return "admic can not join a team" },
+		AdminCanNotJoinTeamMSG: func(optional string) string { return "admin can not join a team" },
 		JoinTeamMSG:            func(optional string) string { return "you joined team: " + optional },
 		AdminCanNotVoteMSG:     func(optional string) string { return "admin can not vote" },
 		VoteReceivedMSG:        func(optional string) string { return "vote received" },
+		EndSessionMSG:          func(optional string) string { return "session ended" },
 		MaleTeamName:           "male team",
 		FemaleTeamName:         "female team",
 	}

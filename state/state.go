@@ -11,23 +11,23 @@ type IsAdmin func(userID string) bool
 type ResponseMSG func(optional string) string
 
 type StateSettings struct {
-	IsAdmin                IsAdmin
-	StartSessionMSG        ResponseMSG
+	IsAdmin         IsAdmin
+	StartSessionMSG ResponseMSG
 	// StartTeamMSG           ResponseMSG
 	JoinTeamMSG            ResponseMSG
 	AdminCanNotJoinTeamMSG ResponseMSG
 	EndTeamMSG             ResponseMSG
 	VoteReceivedMSG        ResponseMSG
 	AdminCanNotVoteMSG     ResponseMSG
-	AdminEndSessionMSG     ResponseMSG
+	EndSessionMSG          ResponseMSG
 	Core                   Core
 	MaleTeamName           string
 	FemaleTeamName         string
 }
 
 type State struct {
-	isAdmin                IsAdmin
-	startSessionMSG        ResponseMSG
+	isAdmin         IsAdmin
+	startSessionMSG ResponseMSG
 	// startTeamMSG           ResponseMSG
 	joinTeamMSG            ResponseMSG
 	adminCanNotJoinTeamMSG ResponseMSG
@@ -47,15 +47,15 @@ type State struct {
 
 func New(s StateSettings) *State {
 	return &State{
-		isAdmin:                s.IsAdmin,
-		startSessionMSG:        s.StartSessionMSG,
+		isAdmin:         s.IsAdmin,
+		startSessionMSG: s.StartSessionMSG,
 		// startTeamMSG:           s.StartTeamMSG,
 		joinTeamMSG:            s.JoinTeamMSG,
 		adminCanNotJoinTeamMSG: s.AdminCanNotJoinTeamMSG,
 		endTeamMSG:             s.EndTeamMSG,
 		voteReceivedMSG:        s.VoteReceivedMSG,
 		adminCanNotVoteMSG:     s.AdminCanNotVoteMSG,
-		adminEndSessionMSG:     s.AdminEndSessionMSG,
+		adminEndSessionMSG:     s.EndSessionMSG,
 		core:                   s.Core,
 		maleTeamName:           s.MaleTeamName,
 		femaleTeamName:         s.FemaleTeamName,
