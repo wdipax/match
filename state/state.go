@@ -8,8 +8,11 @@ type Core interface {
 
 type IsAdmin func(userID string) bool
 
+type JoinTeamMSG func(teamName string) string
+
 type StateSettings struct {
 	IsAdmin        IsAdmin
+	JoinTeamMSG    JoinTeamMSG
 	Core           Core
 	MaleTeamName   string
 	FemaleTeamName string
@@ -17,22 +20,27 @@ type StateSettings struct {
 
 type State struct {
 	isAdmin        IsAdmin
+	joinTeamMSG    JoinTeamMSG
 	core           Core
 	maleTeamName   string
 	femaleTeamName string
 
-	userSession map[string]string
+	teams []*team
 }
 
 func New(s StateSettings) *State {
 	return &State{
 		isAdmin:        s.IsAdmin,
+		joinTeamMSG:    s.JoinTeamMSG,
 		core:           s.Core,
 		maleTeamName:   s.MaleTeamName,
 		femaleTeamName: s.FemaleTeamName,
-
-		userSession: make(map[string]string),
 	}
+}
+
+type team struct {
+	id   string
+	name string
 }
 
 type Response struct {
@@ -41,10 +49,26 @@ type Response struct {
 }
 
 func (s *State) Input(userID string, payload string) []*Response {
+	if s.isAdmin(userID) {
+		return nil
+	}
+
+	var t *team
+
+	for _, v := range s.teams {
+		if v.id == payload {
+			t = v
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
 	return []*Response{
 		{
 			UserID: userID,
-			MSG:    s.maleTeamName,
+			MSG:    s.joinTeamMSG(t.name),
 		},
 	}
 }
@@ -66,7 +90,12 @@ func (s *State) StartMaleRegistration(userID string) []*Response {
 		return nil
 	}
 
-	teamID := s.core.NewTeam("male")
+	teamID := s.core.NewTeam(s.maleTeamName)
+
+	s.teams = append(s.teams, &team{
+		id:   teamID,
+		name: s.maleTeamName,
+	})
 
 	return []*Response{
 		{
@@ -85,7 +114,12 @@ func (s *State) StartFemaleRegistration(userID string) []*Response {
 		return nil
 	}
 
-	teamID := s.core.NewTeam("male")
+	teamID := s.core.NewTeam(s.femaleTeamName)
+
+	s.teams = append(s.teams, &team{
+		id:   teamID,
+		name: s.femaleTeamName,
+	})
 
 	return []*Response{
 		{

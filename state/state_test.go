@@ -119,8 +119,9 @@ func TestState(t *testing.T) {
 				}
 
 				st := state.New(state.StateSettings{
-					IsAdmin: a.IsAdmin,
-					Core:    &c,
+					IsAdmin:      a.IsAdmin,
+					JoinTeamMSG:  joinTeamMSG,
+					Core:         &c,
 					MaleTeamName: "male team",
 				})
 
@@ -141,6 +142,33 @@ func TestState(t *testing.T) {
 
 			t.Run("female team", func(t *testing.T) {
 				t.Parallel()
+
+				var c fakeCore
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin:        a.IsAdmin,
+					JoinTeamMSG:    joinTeamMSG,
+					Core:           &c,
+					FemaleTeamName: "female team",
+				})
+
+				teamID := startTeamRegistration(t, helperSettings{
+					state:    st,
+					teamType: female,
+					core:     &c,
+					adminID:  a.adminID,
+				})
+
+				res := st.Input("user", teamID)
+
+				require.Len(t, res, 1)
+
+				assert.Equal(t, "user", res[0].UserID)
+				assert.Contains(t, res[0].MSG, "female team")
 			})
 		})
 	})
@@ -209,4 +237,8 @@ func (c *fakeCore) NewSession() string {
 
 func (c *fakeCore) NewTeam(name string) string {
 	return c.newTeamID
+}
+
+func joinTeamMSG(teamName string) string {
+	return "you joined the team " + teamName
 }
