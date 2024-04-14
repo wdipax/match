@@ -209,7 +209,32 @@ func TestState(t *testing.T) {
 			t.Run("female team", func(t *testing.T) {
 				t.Parallel()
 
-				
+				var c fakeCore
+
+				a := fakeIsAdmin{
+					adminID: "admin",
+				}
+
+				st := state.New(state.StateSettings{
+					IsAdmin:        a.IsAdmin,
+					JoinTeamMSG:    joinTeamMSG,
+					Core:           &c,
+					FemaleTeamName: "female team",
+				})
+
+				startTeamRegistration(t, helperSettings{
+					state:    st,
+					teamType: female,
+					core:     &c,
+					adminID:  a.adminID,
+				})
+
+				res := st.EndFemaleRegistration("admin")
+
+				require.Len(t, res, 1)
+
+				assert.Equal(t, "admin", res[0].UserID)
+				assert.Contains(t, res[0].MSG, "female team")
 			})
 		})
 	})
