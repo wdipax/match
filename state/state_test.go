@@ -23,7 +23,10 @@ func TestState(t *testing.T) {
 				adminID: "admin",
 			}
 
-			st := state.New(a.IsAdmin, &c)
+			st := state.New(state.StateSettings{
+				IsAdmin: a.IsAdmin,
+				Core:    &c,
+			})
 
 			st.NewSession("admin")
 
@@ -39,7 +42,10 @@ func TestState(t *testing.T) {
 				adminID: "admin",
 			}
 
-			st := state.New(a.IsAdmin, &c)
+			st := state.New(state.StateSettings{
+				IsAdmin: a.IsAdmin,
+				Core:    &c,
+			})
 
 			st.NewSession("user")
 
@@ -62,7 +68,10 @@ func TestState(t *testing.T) {
 					adminID: "admin",
 				}
 
-				st := state.New(a.IsAdmin, &c)
+				st := state.New(state.StateSettings{
+					IsAdmin: a.IsAdmin,
+					Core:    &c,
+				})
 
 				res := st.StartMaleRegistration("admin")
 
@@ -83,7 +92,10 @@ func TestState(t *testing.T) {
 					adminID: "admin",
 				}
 
-				st := state.New(a.IsAdmin, &c)
+				st := state.New(state.StateSettings{
+					IsAdmin: a.IsAdmin,
+					Core:    &c,
+				})
 
 				res := st.StartFemaleRegistration("admin")
 
@@ -106,13 +118,17 @@ func TestState(t *testing.T) {
 					adminID: "admin",
 				}
 
-				st := state.New(a.IsAdmin, &c)
+				st := state.New(state.StateSettings{
+					IsAdmin: a.IsAdmin,
+					Core:    &c,
+					MaleTeamName: "male team",
+				})
 
 				teamID := startTeamRegistration(t, helperSettings{
 					state:    st,
 					teamType: male,
 					core:     &c,
-					adminID: a.adminID,
+					adminID:  a.adminID,
 				})
 
 				res := st.Input("user", teamID)
@@ -120,7 +136,7 @@ func TestState(t *testing.T) {
 				require.Len(t, res, 1)
 
 				assert.Equal(t, "user", res[0].UserID)
-				// assert.Contains(t, res[0].MSG, teamID)
+				assert.Contains(t, res[0].MSG, "male team")
 			})
 
 			t.Run("female team", func(t *testing.T) {
@@ -141,7 +157,7 @@ type helperSettings struct {
 	state    *state.State
 	teamType teamType
 	core     *fakeCore
-	adminID string
+	adminID  string
 }
 
 func startTeamRegistration(tb testing.TB, settings helperSettings) string {
@@ -191,6 +207,6 @@ func (c *fakeCore) NewSession() string {
 	return "session_id"
 }
 
-func (c *fakeCore) NewTeam() string {
+func (c *fakeCore) NewTeam(name string) string {
 	return c.newTeamID
 }
