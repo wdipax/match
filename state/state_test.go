@@ -429,22 +429,46 @@ func TestState(t *testing.T) {
 			assert.Equal(t, "voting has started", res[0].MSG)
 		})
 
-		// t.Run("all users receive polls", func(t *testing.T) {
-		// 	t.Parallel()
+		t.Run("all users receive polls", func(t *testing.T) {
+			t.Parallel()
 
-		// 	var c fakeCore
+			ss, c := stateSettings()
 
-		// 	a := fakeIsAdmin{
-		// 		adminID: "admin",
-		// 	}
+			st := state.New(ss)
 
-		// 	st := state.New(state.StateSettings{
-		// 		IsAdmin:     a.IsAdmin,
-		// 		JoinTeamMSG: joinTeamMSG,
-		// 		Core:        &c,
-		// 	})
+			hs := helperSettings{
+				state: st,
+				core:  c,
+			}
 
-		// })
+			startSession(t, hs)
+
+			hs.teamType = male
+
+			maleTeamID := startTeamRegistration(t, hs)
+
+			joinTeam(t, hs, "male", maleTeamID)
+
+			endTeamRegistration(t, hs)
+
+			hs.teamType = female
+
+			femaleTeamID := startTeamRegistration(t, hs)
+
+			joinTeam(t, hs, "female", femaleTeamID)
+
+			endTeamRegistration(t, hs)
+
+			res := st.StartVoting("admin")
+
+			maleRe := getUserResponse(t, res, "male")
+
+			assert.Equal(t, "please vote for female_team_id", maleRe.MSG)
+
+			femaleRe := getUserResponse(t, res, "female")
+
+			assert.Equal(t, "please vote for male_team_id", femaleRe.MSG)
+		})
 
 		t.Run("user can not start voting", func(t *testing.T) {
 			t.Parallel()
@@ -510,22 +534,58 @@ func TestState(t *testing.T) {
 			assert.Equal(t, "admin can not vote", res[0].MSG)
 		})
 
-		// TODO: voting ends
-		// TODO: when all user has voted
-
-		t.Run("when admin ends the session", func(t *testing.T) {
+		t.Run("session ends", func(t *testing.T) {
 			t.Parallel()
 
-			ss, _ := stateSettings()
+			t.Run("when all users have voted", func(t *testing.T) {
+				t.Parallel()
 
-			st := state.New(ss)
+				ss, c := stateSettings()
 
-			res := st.EndSession("admin")
+				st := state.New(ss)
 
-			require.Len(t, res, 1)
+				hs := helperSettings{
+					state: st,
+					core:  c,
+				}
 
-			assert.Equal(t, "admin", res[0].UserID)
-			assert.Equal(t, "session ended", res[0].MSG)
+				startSession(t, hs)
+
+				hs.teamType = male
+
+				maleTeamID := startTeamRegistration(t, hs)
+
+				joinTeam(t, hs, "male", maleTeamID)
+
+				endTeamRegistration(t, hs)
+
+				hs.teamType = female
+
+				femaleTeamID := startTeamRegistration(t, hs)
+
+				joinTeam(t, hs, "female", femaleTeamID)
+
+				endTeamRegistration(t, hs)
+
+				st.StartVoting("admin")
+
+				// TODO: check
+			})
+
+			t.Run("when admin ends the session", func(t *testing.T) {
+				t.Parallel()
+
+				ss, _ := stateSettings()
+
+				st := state.New(ss)
+
+				res := st.EndSession("admin")
+
+				require.Len(t, res, 1)
+
+				assert.Equal(t, "admin", res[0].UserID)
+				assert.Equal(t, "session ended", res[0].MSG)
+			})
 		})
 
 		t.Run("user can not end the session", func(t *testing.T) {
@@ -590,6 +650,16 @@ func startTeamRegistration(tb testing.TB, settings helperSettings) string {
 	return res[0].MSG
 }
 
+func joinTeam(tb testing.TB, settings helperSettings, userID string, teamID string) {
+	tb.Helper()
+
+	res := settings.state.Input(userID, teamID)
+
+	require.Len(tb, res, 1)
+	require.Equal(tb, userID, res[0].UserID)
+	require.Contains(tb, res[0].MSG, "joined team")
+}
+
 func endTeamRegistration(tb testing.TB, settings helperSettings) {
 	tb.Helper()
 
@@ -616,6 +686,20 @@ func endTeamRegistration(tb testing.TB, settings helperSettings) {
 	require.Equal(tb, msg, res[0].MSG)
 }
 
+func getUserResponse(tb testing.TB, res []*state.Response, userID string) *state.Response {
+	tb.Helper()
+
+	for _, v := range res {
+		if v.UserID == userID {
+			return v
+		}
+	}
+
+	tb.Fatalf("no response for %s", userID)
+
+	return nil
+}
+
 type fakeCore struct {
 	newTeamID string
 }
@@ -626,6 +710,10 @@ func (c *fakeCore) NewSession() string {
 
 func (c *fakeCore) NewTeam(name string) string {
 	return c.newTeamID
+}
+
+func (c *fakeCore) Poll(teamID string) string {
+	return "please vote for " + teamID
 }
 
 func stateSettings() (state.StateSettings, *fakeCore) {

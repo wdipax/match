@@ -4,6 +4,7 @@ package state
 type Core interface {
 	NewSession() string
 	NewTeam(name string) string
+	Poll(teamID string) string
 }
 
 type IsAdmin func(userID string) bool
@@ -73,6 +74,21 @@ type team struct {
 	sessionID    string
 	name         string
 	registration bool
+	users        []string
+}
+
+func (t *team) hasUser(id string) bool {
+	for _, user := range t.users {
+		if user == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (t *team) addUser(id string) {
+	t.users = append(t.users, id)
 }
 
 type sessionPhase int
@@ -139,12 +155,18 @@ func (s *State) Input(userID string, payload string) []*Response {
 		return nil
 	}
 
+	if t.hasUser(userID) {
+		return nil
+	}
+
 	ss = sessionByID(s.sessions, t.sessionID)
 	if ss == nil {
 		return nil
 	}
 
 	s.userSession[userID] = ss
+
+	t.addUser(userID)
 
 	return []*Response{
 		{
@@ -306,12 +328,43 @@ func (s *State) StartVoting(userID string) []*Response {
 
 	ss.phase = voting
 
-	return []*Response{
+	tms := s.adminTeams[userID]
+
+	res := []*Response{
 		{
 			UserID: userID,
 			MSG:    s.startVotingMSG(""),
 		},
 	}
+
+	type teamPole struct {
+		teamID string
+		pole   string
+	}
+
+	var polls []teamPole
+
+	for _, t := range tms {
+		polls = append(polls, teamPole{
+			teamID: t.id,
+			pole:   s.core.Poll(t.id),
+		})
+	}
+
+	for _, t := range tms {
+		for _, u := range t.users {
+			for _, p := range polls {
+				if p.teamID != t.id {
+					res = append(res, &Response{
+						UserID: u,
+						MSG:    p.pole,
+					})
+				}
+			}
+		}
+	}
+
+	return res
 }
 
 func (s *State) EndSession(userID string) []*Response {
