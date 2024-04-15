@@ -505,10 +505,9 @@ func TestState(t *testing.T) {
 
 			res = st.Input("user", "vote")
 
-			require.Len(t, res, 1)
+			re := getUserResponse(t, res, "user")
 
-			assert.Equal(t, "user", res[0].UserID)
-			assert.Equal(t, "vote received", res[0].MSG)
+			assert.Equal(t, "vote received", re.MSG)
 		})
 
 		t.Run("amdin can not vote", func(t *testing.T) {
@@ -569,7 +568,13 @@ func TestState(t *testing.T) {
 
 				st.StartVoting("admin")
 
-				// TODO: check
+				vote(t, hs, "male")
+
+				res := vote(t, hs, "female")
+
+				re := getUserResponse(t, res, "admin")
+
+				assert.Equal(t, "session ended", re.MSG)
 			})
 
 			t.Run("when admin ends the session", func(t *testing.T) {
@@ -684,6 +689,18 @@ func endTeamRegistration(tb testing.TB, settings helperSettings) {
 	require.Len(tb, res, 1)
 	require.Equal(tb, "admin", res[0].UserID)
 	require.Equal(tb, msg, res[0].MSG)
+}
+
+func vote(tb testing.TB, settings helperSettings, userID string) []*state.Response {
+	tb.Helper()
+
+	res := settings.state.Input(userID, "vote")
+
+	re := getUserResponse(tb, res, userID)
+
+	require.Equal(tb, "vote received", re.MSG)
+
+	return res
 }
 
 func getUserResponse(tb testing.TB, res []*state.Response, userID string) *state.Response {

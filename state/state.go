@@ -74,21 +74,56 @@ type team struct {
 	sessionID    string
 	name         string
 	registration bool
-	users        []string
+	users        []*user
+}
+
+type user struct {
+	id    string
+	voted bool
 }
 
 func (t *team) hasUser(id string) bool {
+	return t.user(id) != nil
+}
+
+func (t *team) user(id string) *user {
 	for _, user := range t.users {
-		if user == id {
-			return true
+		if user.id == id {
+			return user
 		}
 	}
 
-	return false
+	return nil
 }
 
 func (t *team) addUser(id string) {
-	t.users = append(t.users, id)
+	t.users = append(t.users, &user{
+		id: id,
+	})
+}
+
+func vote(tms []*team, userID string) {
+	var u *user
+
+	for _, t := range tms {
+		if u = t.user(userID); u != nil {
+			u.voted = true
+
+			return
+		}
+	}
+}
+
+func allUsersVoted(tms []*team) bool {
+	for _, t := range tms {
+		for _, u := range t.users {
+			if !u.voted {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 type sessionPhase int
@@ -99,8 +134,9 @@ const (
 )
 
 type session struct {
-	id    string
-	phase sessionPhase
+	id      string
+	phase   sessionPhase
+	adminID string
 }
 
 type Response struct {
@@ -138,12 +174,27 @@ func (s *State) Input(userID string, payload string) []*Response {
 	}
 
 	if ss != nil && ss.phase == voting {
-		return []*Response{
+		tms := s.adminTeams[ss.adminID]
+
+		vote(tms, userID)
+
+		res := []*Response{
 			{
 				UserID: userID,
 				MSG:    s.voteReceivedMSG(""),
 			},
 		}
+
+		if allUsersVoted(tms) {
+			// defer deleteSession(ss.id)
+
+			res = append(res, &Response{
+				UserID: ss.adminID,
+				MSG:    s.endSessionMSG(""),
+			})
+		}
+
+		return res
 	}
 
 	t := teamByID(s.teams, payload)
@@ -188,8 +239,9 @@ func (s *State) NewSession(userID string) []*Response {
 	sessionID := s.core.NewSession()
 
 	ss := &session{
-		id:    sessionID,
-		phase: teamManagement,
+		id:      sessionID,
+		phase:   teamManagement,
+		adminID: userID,
 	}
 
 	s.sessions = append(s.sessions, ss)
@@ -356,7 +408,7 @@ func (s *State) StartVoting(userID string) []*Response {
 			for _, p := range polls {
 				if p.teamID != t.id {
 					res = append(res, &Response{
-						UserID: u,
+						UserID: u.id,
 						MSG:    p.pole,
 					})
 				}
