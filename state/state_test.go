@@ -423,8 +423,10 @@ func TestState(t *testing.T) {
 
 			res := st.StartVoting("admin")
 
-			// TODO: should receive confirmation.
-			assert.NotEmpty(t, res)
+			require.Len(t, res, 1)
+
+			assert.Equal(t, "admin", res[0].UserID)
+			assert.Equal(t, "voting has started", res[0].MSG)
 		})
 
 		// t.Run("all users receive polls", func(t *testing.T) {
@@ -637,6 +639,7 @@ func stateSettings() (state.StateSettings, *fakeCore) {
 		AdminCanNotJoinTeamMSG: func(optional string) string { return "admin can not join a team" },
 		JoinTeamMSG:            func(optional string) string { return "you joined team: " + optional },
 		AdminCanNotVoteMSG:     func(optional string) string { return "admin can not vote" },
+		StartVotingMSG:         func(optional string) string { return "voting has started" },
 		VoteReceivedMSG:        func(optional string) string { return "vote received" },
 		EndSessionMSG:          func(optional string) string { return "session ended" },
 		MaleTeamName:           "male team",
