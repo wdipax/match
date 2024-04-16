@@ -5,6 +5,7 @@ type Core interface {
 	NewSession() string
 	NewTeam(name string) string
 	Poll(teamID string) string
+	Vote(userID string, voice string)
 }
 
 type IsAdmin func(userID string) bool
@@ -187,6 +188,15 @@ func (s *State) Input(userID string, payload string) []*Response {
 
 		if allUsersVoted(tms) {
 			// defer deleteSession(ss.id)
+
+			for _, t := range tms {
+				for _, u := range t.users {
+					res = append(res, &Response{
+						UserID: u.id,
+						MSG:    "here is your matches",
+					})
+				}
+			}
 
 			res = append(res, &Response{
 				UserID: ss.adminID,

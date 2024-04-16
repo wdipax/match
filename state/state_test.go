@@ -603,7 +603,42 @@ func TestState(t *testing.T) {
 			assert.Empty(t, st.EndSession("user"))
 		})
 
-		// TODO: users receive their matches
+		t.Run("users receive their matches", func(t *testing.T) {
+			t.Parallel()
+
+			ss, c := stateSettings()
+
+			st := state.New(ss)
+
+			hs := helperSettings{
+				state: st,
+				core:  c,
+			}
+
+			startSession(t, hs)
+
+			hs.teamType = male
+
+			registerUsersToTeam(t, hs, "male1", "male2")
+
+			hs.teamType = female
+
+			registerUsersToTeam(t, hs, "female1", "female2")
+
+			st.StartVoting("admin")
+
+			vote(t, hs, "male1")
+			vote(t, hs, "female1")
+			vote(t, hs, "male2")
+			res := vote(t, hs, "female2")
+
+			getMatches := responseMSGFilter("here is your matches")
+
+			getUserResponse(t, res, "female2", getMatches)
+			getUserResponse(t, res, "male1", getMatches)
+			getUserResponse(t, res, "male2", getMatches)
+			getUserResponse(t, res, "female1", getMatches)
+		})
 
 		// TODO: admin does not receive matches
 	})
@@ -691,6 +726,18 @@ func endTeamRegistration(tb testing.TB, settings helperSettings) {
 	require.Equal(tb, msg, res[0].MSG)
 }
 
+func registerUsersToTeam(tb testing.TB, settings helperSettings, userIDs ...string) {
+	tb.Helper()
+
+	teamID := startTeamRegistration(tb, settings)
+
+	for _, id := range userIDs {
+		joinTeam(tb, settings, id, teamID)
+	}
+
+	endTeamRegistration(tb, settings)
+}
+
 func vote(tb testing.TB, settings helperSettings, userID string) []*state.Response {
 	tb.Helper()
 
@@ -703,10 +750,32 @@ func vote(tb testing.TB, settings helperSettings, userID string) []*state.Respon
 	return res
 }
 
-func getUserResponse(tb testing.TB, res []*state.Response, userID string) *state.Response {
+func responseMSGFilter(msg string) func(*state.Response) bool {
+	return func(r *state.Response) bool {
+		return r.MSG == msg
+	}
+}
+
+func getUserResponse(tb testing.TB, res []*state.Response, userID string, filters ...func(*state.Response) bool) *state.Response {
 	tb.Helper()
 
+	var skip bool
+
 	for _, v := range res {
+		skip = false
+
+		for _, f := range filters {
+			if !f(v) {
+				skip = true
+
+				break
+			}
+		}
+
+		if skip {
+			continue
+		}
+
 		if v.UserID == userID {
 			return v
 		}
@@ -731,6 +800,10 @@ func (c *fakeCore) NewTeam(name string) string {
 
 func (c *fakeCore) Poll(teamID string) string {
 	return "please vote for " + teamID
+}
+
+func (c *fakeCore) Vote(userID string, voice string) {
+
 }
 
 func stateSettings() (state.StateSettings, *fakeCore) {
