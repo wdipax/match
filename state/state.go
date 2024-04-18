@@ -150,7 +150,7 @@ func (s *State) Input(userID string, payload string) []*Response {
 
 	if s.isAdmin(userID) {
 		if ss == nil {
-			return nil
+			return s.Help(userID)
 		}
 
 		if ss.phase == teamManagement {
@@ -238,7 +238,12 @@ func (s *State) Input(userID string, payload string) []*Response {
 }
 
 func (s *State) Help(userID string) []*Response {
-	return nil
+	return []*Response{
+		{
+			UserID: userID,
+			MSG:    "TODO",
+		},
+	}
 }
 
 func (s *State) NewSession(userID string) []*Response {

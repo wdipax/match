@@ -6,6 +6,10 @@ import (
 	"github.com/wdipax/match/state"
 )
 
+type Messenger interface {
+	Send(userID string, msg string)
+}
+
 type Adapter struct {
 	messenger Messenger
 	state     State
@@ -16,10 +20,6 @@ func New(messenger Messenger, state State) *Adapter {
 		messenger: messenger,
 		state:     state,
 	}
-}
-
-type Messenger interface {
-	Send(userID string, msg string)
 }
 
 type State interface {
