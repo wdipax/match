@@ -5,20 +5,53 @@ import (
 	"github.com/wdipax/match/response"
 )
 
-const (
-	waitForAdmin = iota
-)
+type stage interface {
+	Process(e *event.Event) *response.Response
+}
 
 type State struct {
-	stage int
+	stage
 }
 
 func New() *State {
-	return &State{
-		stage: waitForAdmin,
+	var s State
+
+	st := waitForAdmin{
+		state: &s,
 	}
+
+	s.stage = st
+
+	return &s
 }
 
-func Process(e *event.Event) *response.Response {
+func (s *State) change(st stage) {
+	s.stage = st
+}
+
+type waitForAdmin struct {
+	state *State
+}
+
+func (s waitForAdmin) Process(e *event.Event) *response.Response {
+	if !e.FromAdmin() {
+		return nil
+	}
+
+	st := teamsRegistration{
+		state: s.state,
+	}
+
+	s.state.change(st)
+
+	// TODO: return links for joining teams.
+	return nil
+}
+
+type teamsRegistration struct {
+	state *State
+}
+
+func (s teamsRegistration) Process(e *event.Event) *response.Response {
 	return nil
 }
