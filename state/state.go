@@ -5,10 +5,18 @@ import (
 	"github.com/wdipax/match/response"
 )
 
-type State struct{}
+const (
+	waitForAdmin = iota
+)
+
+type State struct {
+	stage int
+}
 
 func New() *State {
-	return &State{}
+	return &State{
+		stage: waitForAdmin,
+	}
 }
 
 func Process(e *event.Event) *response.Response {
