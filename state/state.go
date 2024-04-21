@@ -38,11 +38,9 @@ func (s waitForAdmin) Process(e *event.Event) *response.Response {
 		return nil
 	}
 
-	st := teamsRegistration{
-		state: s.state,
-	}
+	stg := teamsRegistration(s)
 
-	s.state.change(st)
+	s.state.change(stg)
 
 	// TODO: return links for joining teams.
 	return nil
