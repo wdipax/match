@@ -51,5 +51,21 @@ type teamsRegistration struct {
 }
 
 func (s teamsRegistration) Process(e *event.Event) *response.Response {
+	if e.EndTeamRegistration() {
+		stg := knowEachOther(s)
+
+		s.state.change(stg)
+
+		return nil
+	}
+
+	return nil
+}
+
+type knowEachOther struct {
+	state *State
+}
+
+func (s knowEachOther) Process(e *event.Event) *response.Response {
 	return nil
 }

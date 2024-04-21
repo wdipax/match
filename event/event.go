@@ -9,3 +9,7 @@ func New() *Event {
 func (e *Event) FromAdmin() bool {
 	return true
 }
+
+func (s *Event) EndTeamRegistration() bool {
+	return true
+}
