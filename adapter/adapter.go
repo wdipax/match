@@ -1,30 +1,50 @@
 package adapter
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/wdipax/match/event"
+	"github.com/wdipax/match/state"
+)
 
 type Adapter struct {
-	bot *tgbotapi.BotAPI
+	bot     *tgbotapi.BotAPI
+	isAdmin func(*tgbotapi.User) bool
+
+	state *state.State
 }
 
-func New(bot *tgbotapi.BotAPI) *Adapter {
-	return &Adapter{
-		bot: bot,
+func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
+	s := state.New()
+
+	a := Adapter{
+		bot:     bot,
+		isAdmin: isAdmin,
+		state:   s,
 	}
+
+	return &a
 }
 
 func (a *Adapter) Process(update tgbotapi.Update) {
 	if update.Message == nil {
 		return
 	}
-	
-	keyboard1 := tgbotapi.NewOneTimeReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("start session"),
-		),
-	)
 
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "actions")
-	msg.ReplyMarkup = keyboard1
+	e := event.Event{
+		FromAdmin: a.isAdmin(update.SentFrom()),
+	}
 
-	a.bot.Send(msg)
+	r := a.state.Process(&e)
+
+	// keyboard1 := tgbotapi.NewOneTimeReplyKeyboard(
+	// 	tgbotapi.NewKeyboardButtonRow(
+	// 		tgbotapi.NewKeyboardButton("start session"),
+	// 	),
+	// )
+
+	for _, m := range r.GetMessages() {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, m.Text)
+
+		a.bot.Send(msg)
+	}
 }

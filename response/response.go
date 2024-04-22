@@ -8,6 +8,14 @@ func New() *Response {
 	return &Response{}
 }
 
+func (r *Response) GetMessages() []*Message {
+	if r == nil {
+		return nil
+	}
+
+	return r.Messages
+}
+
 type Message struct {
 	Text string
 }

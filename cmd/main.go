@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -10,7 +11,7 @@ import (
 func main() {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
-		panic(err)
+		log.Fatalf("creating bot: %s", err)
 	}
 
 	bot.Debug = true
@@ -21,7 +22,13 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
-	a := adapter.New(bot)
+	a := adapter.New(bot, func(u *tgbotapi.User) bool {
+		if u == nil {
+			return false
+		}
+
+		return u.UserName == os.Getenv("ADMIN_USER_NAME")
+	})
 
 	// TODO: shutdown on receiving termination signal.
 	// TODO: skip all messages created before the bot has started.
