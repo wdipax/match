@@ -16,7 +16,16 @@ func (r *Response) GetMessages() []*Message {
 	return r.Messages
 }
 
+type MessageType int
+
+const (
+	Text MessageType = iota
+	BoysLink
+	GirlsLink
+)
+
 type Message struct {
 	ChatID int64
 	Text   string
+	Type   MessageType
 }

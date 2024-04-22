@@ -3,6 +3,7 @@ package adapter
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wdipax/match/event"
+	"github.com/wdipax/match/response"
 	"github.com/wdipax/match/state"
 )
 
@@ -33,6 +34,12 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 	e := event.New(
 		update.FromChat().ChatConfig().ChatID,
 		a.isAdmin(update.SentFrom()),
+		func() string {
+			if update.Message.Command() == "start" {
+				return update.Message.CommandArguments()
+			}
+			return ""
+		}(),
 	)
 
 	r := a.state.Process(e)
@@ -44,7 +51,18 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 	// )
 
 	for _, m := range r.GetMessages() {
-		msg := tgbotapi.NewMessage(m.ChatID, m.Text)
+		var text string
+
+		switch m.Type {
+		case response.Text:
+			text = m.Text
+		case response.BoysLink:
+			text = "To join boys team click https://t.me/" + a.bot.Self.UserName + "?start=" + m.Text
+		case response.GirlsLink:
+			text = "To join girls team click https://t.me/" + a.bot.Self.UserName + "?start=" + m.Text
+		}
+
+		msg := tgbotapi.NewMessage(m.ChatID, text)
 
 		a.bot.Send(msg)
 	}

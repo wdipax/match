@@ -12,7 +12,37 @@ func New() *Session {
 }
 
 type team struct {
-	id string
+	id    string
+	users []*user
+}
+
+type user struct {
+	id int64
+}
+
+func (s *Session) JoinTeam(teamID string, userID int64) bool {
+	switch {
+	case s.boys.id == teamID:
+		return joinTeam(s.boys, userID)
+	case s.girls.id == teamID:
+		return joinTeam(s.girls, userID)
+	default:
+		return false
+	}
+}
+
+func joinTeam(t *team, userID int64) bool {
+	for _, u := range t.users {
+		if u.id == userID {
+			return false
+		}
+	}
+
+	t.users = append(t.users, &user{
+		id: userID,
+	})
+
+	return true
 }
 
 func (s *Session) CreateBoysTeam() string {

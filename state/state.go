@@ -58,10 +58,12 @@ func (s waitForAdmin) Process(e *event.Event) *response.Response {
 			{
 				ChatID: e.ChatID,
 				Text:   boysID,
+				Type:   response.BoysLink,
 			},
 			{
 				ChatID: e.ChatID,
 				Text:   girlsID,
+				Type:   response.GirlsLink,
 			},
 		},
 	}
@@ -72,13 +74,47 @@ type teamsRegistration struct {
 }
 
 func (s teamsRegistration) Process(e *event.Event) *response.Response {
-	if e.EndTeamRegistration {
-		stg := knowEachOther(s)
-
-		s.state.change(stg)
-
-		return nil
+	if e.FromAdmin && e.TeamID != "" {
+		return &response.Response{
+			Messages: []*response.Message{
+				{
+					ChatID: e.ChatID,
+					Text:   "you can not join a team, you are an admin",
+				},
+			},
+		}
 	}
+
+	if !e.FromAdmin && e.TeamID != "" {
+		ok := s.state.session.JoinTeam(e.TeamID, e.ChatID)
+		if !ok {
+			return &response.Response{
+				Messages: []*response.Message{
+					{
+						ChatID: e.ChatID,
+						Text:   "no such team",
+					},
+				},
+			}
+		}
+
+		return &response.Response{
+			Messages: []*response.Message{
+				{
+					ChatID: e.ChatID,
+					Text:   "what is your name?",
+				},
+			},
+		}
+	}
+
+	// if e.EndTeamRegistration {
+	// 	stg := knowEachOther(s)
+
+	// 	s.state.change(stg)
+
+	// 	return nil
+	// }
 
 	return nil
 }
