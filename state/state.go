@@ -1,6 +1,9 @@
 package state
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/wdipax/match/event"
 	"github.com/wdipax/match/response"
 	"github.com/wdipax/match/session"
@@ -105,6 +108,34 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 					Text:   "what is your name?",
 				},
 			},
+		}
+	}
+
+	if !e.FromAdmin && e.TeamID == "" {
+		i, err := strconv.Atoi(e.Text)
+		if err == nil {
+			err = s.state.session.SetUserNumber(e.ChatID, i)
+			if err != nil {
+				return &response.Response{
+					Messages: []*response.Message{
+						{
+							ChatID: e.ChatID,
+							Text:   err.Error(),
+						},
+					},
+				}
+			}
+
+			return &response.Response{
+				Messages: []*response.Message{
+					{
+						ChatID: e.ChatID,
+						Text: fmt.Sprintf("%d is your number now", i),
+					},
+				},
+			}
+		} else {
+			// s.state.session.SetUserName(e.ChatID, e.Text)
 		}
 	}
 

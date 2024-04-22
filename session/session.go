@@ -17,7 +17,45 @@ type team struct {
 }
 
 type user struct {
-	id int64
+	id     int64
+	number int
+}
+
+type Error string
+
+func (e Error) Error() string {
+	return string(e)
+}
+
+const (
+	ErrNoUser Error = "no such user"
+)
+
+func (s *Session) SetUserNumber(userID int64, num int) error {
+	u := s.getUser(userID)
+	if u == nil {
+		return ErrNoUser
+	}
+
+	u.number = num
+
+	return nil
+}
+
+func (s *Session) getUser(id int64) *user {
+	for _, u := range s.boys.users {
+		if u.id == id {
+			return u
+		}
+	}
+
+	for _, u := range s.girls.users {
+		if u.id == id {
+			return u
+		}
+	}
+
+	return nil
 }
 
 func (s *Session) JoinTeam(teamID string, userID int64) bool {

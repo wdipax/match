@@ -33,6 +33,7 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 
 	e := event.New(
 		update.FromChat().ChatConfig().ChatID,
+		update.Message.Text,
 		a.isAdmin(update.SentFrom()),
 		func() string {
 			if update.Message.Command() == "start" {
