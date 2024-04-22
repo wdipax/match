@@ -1,15 +1,10 @@
 package event
 
-type Event struct{}
+type Event struct {
+	FromAdmin           bool
+	EndTeamRegistration bool
+}
 
 func New() *Event {
 	return &Event{}
-}
-
-func (e *Event) FromAdmin() bool {
-	return true
-}
-
-func (s *Event) EndTeamRegistration() bool {
-	return true
 }
