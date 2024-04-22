@@ -31,6 +31,7 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 	}
 
 	e := event.Event{
+		ChatID:    update.FromChat().ChatConfig().ChatID,
 		FromAdmin: a.isAdmin(update.SentFrom()),
 	}
 
@@ -43,7 +44,7 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 	// )
 
 	for _, m := range r.GetMessages() {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, m.Text)
+		msg := tgbotapi.NewMessage(m.ChatID, m.Text)
 
 		a.bot.Send(msg)
 	}

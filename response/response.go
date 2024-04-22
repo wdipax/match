@@ -17,5 +17,6 @@ func (r *Response) GetMessages() []*Message {
 }
 
 type Message struct {
-	Text string
+	ChatID int64
+	Text   string
 }

@@ -56,10 +56,12 @@ func (s waitForAdmin) Process(e *event.Event) *response.Response {
 	return &response.Response{
 		Messages: []*response.Message{
 			{
-				Text: boysID,
+				ChatID: e.ChatID,
+				Text:   boysID,
 			},
 			{
-				Text: girlsID,
+				ChatID: e.ChatID,
+				Text:   girlsID,
 			},
 		},
 	}
