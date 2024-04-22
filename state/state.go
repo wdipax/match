@@ -130,12 +130,31 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 				Messages: []*response.Message{
 					{
 						ChatID: e.ChatID,
-						Text: fmt.Sprintf("%d is your number now", i),
+						Text:   fmt.Sprintf("%d is your number now", i),
 					},
 				},
 			}
 		} else {
-			// s.state.session.SetUserName(e.ChatID, e.Text)
+			err = s.state.session.SetUserName(e.ChatID, e.Text)
+			if err != nil {
+				return &response.Response{
+					Messages: []*response.Message{
+						{
+							ChatID: e.ChatID,
+							Text:   err.Error(),
+						},
+					},
+				}
+			}
+
+			return &response.Response{
+				Messages: []*response.Message{
+					{
+						ChatID: e.ChatID,
+						Text:   fmt.Sprintf("Hello %q! What is your number?", e.Text),
+					},
+				},
+			}
 		}
 	}
 

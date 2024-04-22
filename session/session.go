@@ -18,6 +18,7 @@ type team struct {
 
 type user struct {
 	id     int64
+	name   string
 	number int
 }
 
@@ -30,6 +31,17 @@ func (e Error) Error() string {
 const (
 	ErrNoUser Error = "no such user"
 )
+
+func (s *Session) SetUserName(userID int64, name string) error {
+	u := s.getUser(userID)
+	if u == nil {
+		return ErrNoUser
+	}
+
+	u.name = name
+
+	return nil
+}
 
 func (s *Session) SetUserNumber(userID int64, num int) error {
 	u := s.getUser(userID)
