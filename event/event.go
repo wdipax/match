@@ -6,6 +6,9 @@ type Event struct {
 	EndTeamRegistration bool
 }
 
-func New() *Event {
-	return &Event{}
+func New(chatID int64, fromAdmin bool) *Event {
+	return &Event{
+		ChatID:    chatID,
+		FromAdmin: fromAdmin,
+	}
 }

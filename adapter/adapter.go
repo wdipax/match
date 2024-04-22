@@ -30,12 +30,12 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 		return
 	}
 
-	e := event.Event{
-		ChatID:    update.FromChat().ChatConfig().ChatID,
-		FromAdmin: a.isAdmin(update.SentFrom()),
-	}
+	e := event.New(
+		update.FromChat().ChatConfig().ChatID,
+		a.isAdmin(update.SentFrom()),
+	)
 
-	r := a.state.Process(&e)
+	r := a.state.Process(e)
 
 	// keyboard1 := tgbotapi.NewOneTimeReplyKeyboard(
 	// 	tgbotapi.NewKeyboardButtonRow(
