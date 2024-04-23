@@ -1,8 +1,11 @@
 package state
 
 import (
+	"cmp"
 	"fmt"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/wdipax/match/event"
 	"github.com/wdipax/match/response"
@@ -160,6 +163,43 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 					},
 				},
 			}
+		}
+	}
+
+	if e.FromAdmin && e.Command == event.Statistics {
+		stat := func(users []*session.User) string {
+			if len(users) == 0 {
+				return "is empty righ now"
+			}
+
+			slices.SortFunc(users, func(a, b *session.User) int {
+				if n := cmp.Compare(a.Number, b.Number); n != 0 {
+					return n
+				}
+
+				return cmp.Compare(a.Name, b.Name)
+			})
+
+			var rows []string
+
+			for _, u := range users {
+				rows = append(rows, fmt.Sprintf("%d %s", u.Number, u.Name))
+			}
+
+			return strings.Join(rows, "\n")
+		}
+
+		return &response.Response{
+			Messages: []*response.Message{
+				{
+					ChatID: e.ChatID,
+					Text:   fmt.Sprintf("boys team:\n%s", stat(s.state.session.GetBoys())),
+				},
+				{
+					ChatID: e.ChatID,
+					Text:   fmt.Sprintf("girls team:\n%s", stat(s.state.session.GetGirls())),
+				},
+			},
 		}
 	}
 

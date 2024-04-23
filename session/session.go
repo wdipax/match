@@ -18,8 +18,8 @@ type team struct {
 
 type User struct {
 	ID     int64
-	name   string
-	number int
+	Name   string
+	Number int
 }
 
 type Error string
@@ -38,7 +38,7 @@ func (s *Session) SetUserName(userID int64, name string) error {
 		return ErrNoUser
 	}
 
-	u.name = name
+	u.Name = name
 
 	return nil
 }
@@ -49,13 +49,21 @@ func (s *Session) SetUserNumber(userID int64, num int) error {
 		return ErrNoUser
 	}
 
-	u.number = num
+	u.Number = num
 
 	return nil
 }
 
+func (s *Session) GetBoys() []*User {
+	return s.boys.users
+}
+
+func (s *Session) GetGirls() []*User {
+	return s.girls.users
+}
+
 func (s *Session) GetAllUsers() []*User {
-	return append(s.boys.users, s.girls.users...)
+	return append(s.GetBoys(), s.GetGirls()...)
 }
 
 func (s *Session) getUser(id int64) *User {

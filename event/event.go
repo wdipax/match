@@ -1,9 +1,10 @@
 package event
 
 const (
-	PreviousStage = iota
+	Unknown = iota
+	PreviousStage
 	NextStage
-	Report
+	Statistics
 )
 
 type Event struct {
@@ -20,6 +21,6 @@ func New(chatID int64, text string, fromAdmin bool, teamID string, command int) 
 		Text:      text,
 		FromAdmin: fromAdmin,
 		TeamID:    teamID,
-		Command:  command,
+		Command:   command,
 	}
 }

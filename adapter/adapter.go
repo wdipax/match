@@ -7,12 +7,14 @@ import (
 	"github.com/wdipax/match/state"
 )
 
+const stat = "show statistics"
+
 type Adapter struct {
 	bot     *tgbotapi.BotAPI
 	isAdmin func(*tgbotapi.User) bool
 
-	state                    *state.State
-	teamRegistrationKeyboard tgbotapi.ReplyKeyboardMarkup
+	state            *state.State
+	teamRegistration *control
 }
 
 func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
@@ -23,15 +25,22 @@ func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
 		isAdmin: isAdmin,
 
 		state: s,
-		teamRegistrationKeyboard: tgbotapi.NewReplyKeyboard(
+	}
+
+	a.teamRegistration = &control{
+		keyboard: tgbotapi.NewReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton("show statistics"),
+				tgbotapi.NewKeyboardButton(stat),
 				tgbotapi.NewKeyboardButton("end team registration"),
 			),
 		),
 	}
 
 	return &a
+}
+
+type control struct {
+	keyboard tgbotapi.ReplyKeyboardMarkup
 }
 
 func (a *Adapter) Process(update tgbotapi.Update) {
@@ -49,7 +58,14 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 			}
 			return ""
 		}(),
-		0,
+		func() int {
+			switch {
+			case update.Message.Text == stat:
+				return event.Statistics
+			default:
+				return event.Unknown
+			}
+		}(),
 	)
 
 	r := a.state.Process(e)
@@ -67,7 +83,7 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 		case response.GirlsLink:
 			text = "To join girls team click https://t.me/" + a.bot.Self.UserName + "?start=" + m.Text
 		case response.TeamRegistration:
-			msg.ReplyMarkup = a.teamRegistrationKeyboard
+			msg.ReplyMarkup = a.teamRegistration.keyboard
 		}
 
 		msg.Text = text
