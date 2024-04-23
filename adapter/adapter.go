@@ -11,7 +11,8 @@ type Adapter struct {
 	bot     *tgbotapi.BotAPI
 	isAdmin func(*tgbotapi.User) bool
 
-	state *state.State
+	state                    *state.State
+	teamRegistrationKeyboard tgbotapi.ReplyKeyboardMarkup
 }
 
 func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
@@ -20,7 +21,14 @@ func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
 	a := Adapter{
 		bot:     bot,
 		isAdmin: isAdmin,
-		state:   s,
+
+		state: s,
+		teamRegistrationKeyboard: tgbotapi.NewReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton("show statistics"),
+				tgbotapi.NewKeyboardButton("end team registration"),
+			),
+		),
 	}
 
 	return &a
@@ -41,18 +49,15 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 			}
 			return ""
 		}(),
+		0,
 	)
 
 	r := a.state.Process(e)
 
-	// keyboard1 := tgbotapi.NewOneTimeReplyKeyboard(
-	// 	tgbotapi.NewKeyboardButtonRow(
-	// 		tgbotapi.NewKeyboardButton("start session"),
-	// 	),
-	// )
-
 	for _, m := range r.GetMessages() {
-		var text string
+		text := m.Text
+
+		msg := tgbotapi.NewMessage(m.ChatID, text)
 
 		switch m.Type {
 		case response.Text:
@@ -61,9 +66,11 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 			text = "To join boys team click https://t.me/" + a.bot.Self.UserName + "?start=" + m.Text
 		case response.GirlsLink:
 			text = "To join girls team click https://t.me/" + a.bot.Self.UserName + "?start=" + m.Text
+		case response.TeamRegistration:
+			msg.ReplyMarkup = a.teamRegistrationKeyboard
 		}
 
-		msg := tgbotapi.NewMessage(m.ChatID, text)
+		msg.Text = text
 
 		a.bot.Send(msg)
 	}

@@ -60,6 +60,11 @@ func (s waitForAdmin) Process(e *event.Event) *response.Response {
 		Messages: []*response.Message{
 			{
 				ChatID: e.ChatID,
+				Text:   "team registration started",
+				Type:   response.TeamRegistration,
+			},
+			{
+				ChatID: e.ChatID,
 				Text:   boysID,
 				Type:   response.BoysLink,
 			},
@@ -158,13 +163,31 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 		}
 	}
 
-	// if e.EndTeamRegistration {
-	// 	stg := knowEachOther(s)
+	if e.FromAdmin && e.Command == event.NextStage {
+		const endRegistration = "team registration ended"
 
-	// 	s.state.change(stg)
+		res := &response.Response{
+			Messages: []*response.Message{
+				{
+					ChatID: e.ChatID,
+					Text:   endRegistration,
+				},
+			},
+		}
 
-	// 	return nil
-	// }
+		for _, u := range s.state.session.GetAllUsers() {
+			res.Messages = append(res.Messages, &response.Message{
+				ChatID: u.ID,
+				Text:   endRegistration,
+			})
+		}
+
+		stg := knowEachOther(s)
+
+		s.state.change(stg)
+
+		return res
+	}
 
 	return nil
 }

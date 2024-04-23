@@ -13,11 +13,11 @@ func New() *Session {
 
 type team struct {
 	id    string
-	users []*user
+	users []*User
 }
 
-type user struct {
-	id     int64
+type User struct {
+	ID     int64
 	name   string
 	number int
 }
@@ -54,15 +54,19 @@ func (s *Session) SetUserNumber(userID int64, num int) error {
 	return nil
 }
 
-func (s *Session) getUser(id int64) *user {
+func (s *Session) GetAllUsers() []*User {
+	return append(s.boys.users, s.girls.users...)
+}
+
+func (s *Session) getUser(id int64) *User {
 	for _, u := range s.boys.users {
-		if u.id == id {
+		if u.ID == id {
 			return u
 		}
 	}
 
 	for _, u := range s.girls.users {
-		if u.id == id {
+		if u.ID == id {
 			return u
 		}
 	}
@@ -83,13 +87,13 @@ func (s *Session) JoinTeam(teamID string, userID int64) bool {
 
 func joinTeam(t *team, userID int64) bool {
 	for _, u := range t.users {
-		if u.id == userID {
+		if u.ID == userID {
 			return false
 		}
 	}
 
-	t.users = append(t.users, &user{
-		id: userID,
+	t.users = append(t.users, &User{
+		ID: userID,
 	})
 
 	return true

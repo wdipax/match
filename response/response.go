@@ -22,6 +22,8 @@ const (
 	Text MessageType = iota
 	BoysLink
 	GirlsLink
+	TeamRegistration
+	KnowEachOther
 )
 
 type Message struct {
