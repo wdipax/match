@@ -211,6 +211,7 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 				{
 					ChatID: e.ChatID,
 					Text:   endRegistration,
+					Type:   response.KnowEachOther,
 				},
 			},
 		}
@@ -237,5 +238,32 @@ type knowEachOther struct {
 }
 
 func (s knowEachOther) Process(e *event.Event) *response.Response {
+	if e.FromAdmin && e.Command == event.PreviousStage {
+		const restartRegistration = "team registration reopened"
+
+		res := &response.Response{
+			Messages: []*response.Message{
+				{
+					ChatID: e.ChatID,
+					Text:   restartRegistration,
+					Type:   response.TeamRegistration,
+				},
+			},
+		}
+
+		for _, u := range s.state.session.GetAllUsers() {
+			res.Messages = append(res.Messages, &response.Message{
+				ChatID: u.ID,
+				Text:   restartRegistration,
+			})
+		}
+
+		stg := teamsRegistration(s)
+
+		s.state.change(stg)
+
+		return res
+	}
+
 	return nil
 }

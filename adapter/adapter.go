@@ -7,14 +7,22 @@ import (
 	"github.com/wdipax/match/state"
 )
 
-const stat = "show statistics"
+const (
+	stat                   = "show statistics"
+	endTeamRegistration    = "end teams registration"
+	reopenTeamRegistration = "back to teams registration"
+	startVoting            = "start voting"
+)
 
 type Adapter struct {
 	bot     *tgbotapi.BotAPI
 	isAdmin func(*tgbotapi.User) bool
 
-	state            *state.State
+	state *state.State
+
+	control          *control
 	teamRegistration *control
+	knowEachOther    *control
 }
 
 func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
@@ -31,16 +39,46 @@ func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
 		keyboard: tgbotapi.NewReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton(stat),
-				tgbotapi.NewKeyboardButton("end team registration"),
+				tgbotapi.NewKeyboardButton(endTeamRegistration),
 			),
 		),
+		nextStage: endTeamRegistration,
+	}
+
+	a.knowEachOther = &control{
+		keyboard: tgbotapi.NewReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton(reopenTeamRegistration),
+				tgbotapi.NewKeyboardButton(startVoting),
+			),
+		),
+		previousStage: reopenTeamRegistration,
+		nextStage:     startVoting,
 	}
 
 	return &a
 }
 
 type control struct {
-	keyboard tgbotapi.ReplyKeyboardMarkup
+	keyboard      tgbotapi.ReplyKeyboardMarkup
+	previousStage string
+	nextStage     string
+}
+
+func (c *control) previousStageText() string {
+	if c == nil {
+		return ""
+	}
+
+	return c.previousStage
+}
+
+func (c *control) nextStageText() string {
+	if c == nil {
+		return ""
+	}
+
+	return c.nextStage
 }
 
 func (a *Adapter) Process(update tgbotapi.Update) {
@@ -59,9 +97,13 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 			return ""
 		}(),
 		func() int {
-			switch {
-			case update.Message.Text == stat:
+			switch update.Message.Text {
+			case stat:
 				return event.Statistics
+			case a.control.previousStageText():
+				return event.PreviousStage
+			case a.control.nextStageText():
+				return event.NextStage
 			default:
 				return event.Unknown
 			}
@@ -83,10 +125,20 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 		case response.GirlsLink:
 			text = "To join girls team click https://t.me/" + a.bot.Self.UserName + "?start=" + m.Text
 		case response.TeamRegistration:
-			msg.ReplyMarkup = a.teamRegistration.keyboard
+			a.control = a.teamRegistration
+
+			msg.ReplyMarkup = a.control.keyboard
+		case response.KnowEachOther:
+			a.control = a.knowEachOther
+
+			msg.ReplyMarkup = a.control.keyboard
 		}
 
 		msg.Text = text
+
+		if a.control == nil {
+			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+		}
 
 		a.bot.Send(msg)
 	}
