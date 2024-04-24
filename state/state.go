@@ -122,6 +122,7 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 	if !e.FromAdmin && e.TeamID == "" {
 		i, err := strconv.Atoi(e.Text)
 		if err == nil {
+			// TODO: why do not set the number at the registration moment?
 			err = s.state.session.SetUserNumber(e.ChatID, i)
 			if err != nil {
 				return &response.Response{
@@ -172,13 +173,7 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 				return "is empty righ now"
 			}
 
-			slices.SortFunc(users, func(a, b *session.User) int {
-				if n := cmp.Compare(a.Number, b.Number); n != 0 {
-					return n
-				}
-
-				return cmp.Compare(a.Name, b.Name)
-			})
+			sortUsers(users)
 
 			var rows []string
 
@@ -216,12 +211,7 @@ func (s teamsRegistration) Process(e *event.Event) *response.Response {
 			},
 		}
 
-		for _, u := range s.state.session.GetAllUsers() {
-			res.Messages = append(res.Messages, &response.Message{
-				ChatID: u.ID,
-				Text:   endRegistration,
-			})
-		}
+		res.Messages = append(res.Messages, userMessages(s.state.session.GetAllUsers(), endRegistration)...)
 
 		stg := knowEachOther(s)
 
@@ -251,12 +241,7 @@ func (s knowEachOther) Process(e *event.Event) *response.Response {
 			},
 		}
 
-		for _, u := range s.state.session.GetAllUsers() {
-			res.Messages = append(res.Messages, &response.Message{
-				ChatID: u.ID,
-				Text:   restartRegistration,
-			})
-		}
+		res.Messages = append(res.Messages, userMessages(s.state.session.GetAllUsers(), restartRegistration)...)
 
 		stg := teamsRegistration(s)
 
@@ -265,5 +250,85 @@ func (s knowEachOther) Process(e *event.Event) *response.Response {
 		return res
 	}
 
+	if e.FromAdmin && e.Command == event.NextStage {
+		const startVoting = "it is time to choose"
+
+		res := &response.Response{
+			Messages: []*response.Message{
+				{
+					ChatID: e.ChatID,
+					Text:   startVoting,
+					Type:   response.Voting,
+				},
+			},
+		}
+
+		boysList := pollList(s.state.session.GetBoys())
+
+		girlsList := pollList(s.state.session.GetGirls())
+
+		res.Messages = append(res.Messages, userMessages(s.state.session.GetGirls(), poll(startVoting, boysList))...)
+
+		res.Messages = append(res.Messages, userMessages(s.state.session.GetBoys(), poll(startVoting, girlsList))...)
+
+		stg := voting(s)
+
+		s.state.change(stg)
+
+		return res
+	}
+
 	return nil
+}
+
+type voting struct {
+	state *State
+}
+
+func (s voting) Process(e *event.Event) *response.Response {
+
+	return nil
+}
+
+func poll(header string, options []string) string {
+	return strings.Join(append([]string{header}, options...), "\n")
+}
+
+func pollList(users []*session.User) []string {
+	sortUsers(users)
+
+	var res []string
+
+	for _, u := range users {
+		res = append(res, voteInfo(u))
+	}
+
+	return res
+}
+
+func voteInfo(u *session.User) string {
+	return fmt.Sprintf("%d %s", u.Number, u.Name)
+}
+
+func sortUsers(users []*session.User) {
+	slices.SortFunc(users, func(a, b *session.User) int {
+		if n := cmp.Compare(a.Number, b.Number); n != 0 {
+			return n
+		}
+
+		return cmp.Compare(a.Name, b.Name)
+	})
+}
+
+func userMessages(users []*session.User, text string) []*response.Message {
+	var res []*response.Message
+
+	for _, u := range users {
+		res = append(res, &response.Message{
+			ChatID: u.ID,
+			Text:   text,
+		})
+	}
+
+	return res
 }

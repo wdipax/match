@@ -24,6 +24,7 @@ const (
 	GirlsLink
 	TeamRegistration
 	KnowEachOther
+	Voting
 )
 
 type Message struct {

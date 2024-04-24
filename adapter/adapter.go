@@ -12,6 +12,7 @@ const (
 	endTeamRegistration    = "end teams registration"
 	reopenTeamRegistration = "back to teams registration"
 	startVoting            = "start voting"
+	endSession             = "end session"
 )
 
 type Adapter struct {
@@ -23,6 +24,7 @@ type Adapter struct {
 	control          *control
 	teamRegistration *control
 	knowEachOther    *control
+	voting           *control
 }
 
 func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
@@ -54,6 +56,16 @@ func New(bot *tgbotapi.BotAPI, isAdmin func(*tgbotapi.User) bool) *Adapter {
 		),
 		previousStage: reopenTeamRegistration,
 		nextStage:     startVoting,
+	}
+
+	a.voting = &control{
+		keyboard: tgbotapi.NewReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton(stat),
+				tgbotapi.NewKeyboardButton(endSession),
+			),
+		),
+		nextStage: endSession,
 	}
 
 	return &a
@@ -130,6 +142,10 @@ func (a *Adapter) Process(update tgbotapi.Update) {
 			msg.ReplyMarkup = a.control.keyboard
 		case response.KnowEachOther:
 			a.control = a.knowEachOther
+
+			msg.ReplyMarkup = a.control.keyboard
+		case response.Voting:
+			a.control = a.voting
 
 			msg.ReplyMarkup = a.control.keyboard
 		}
