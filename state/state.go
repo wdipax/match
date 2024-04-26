@@ -3,6 +3,7 @@ package state
 import (
 	"github.com/wdipax/match/protocol/command"
 	"github.com/wdipax/match/protocol/response"
+	"github.com/wdipax/match/protocol/step"
 	"github.com/wdipax/match/state/group"
 )
 
@@ -13,6 +14,7 @@ type Event interface {
 
 type stage interface {
 	Process(e Event) *response.Response
+	Step() int
 }
 
 type State struct {
@@ -39,6 +41,10 @@ type initial struct {
 	*State
 }
 
+func (s initial) Step() int {
+	return step.Initialization
+}
+
 func (s initial) Process(e Event) *response.Response {
 	if e.Command() != command.Initialize {
 		return nil
@@ -48,6 +54,8 @@ func (s initial) Process(e Event) *response.Response {
 
 	s.boys = group.New()
 	s.girls = group.New()
+
+	s.stage = registration(s)
 
 	return &response.Response{
 		Messages: []response.Message{
@@ -63,4 +71,16 @@ func (s initial) Process(e Event) *response.Response {
 			},
 		},
 	}
+}
+
+type registration struct {
+	*State
+}
+
+func (s registration) Step() int {
+	return step.Registration
+}
+
+func (s registration) Process(e Event) *response.Response {
+	return nil
 }

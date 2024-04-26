@@ -5,6 +5,9 @@ import (
 	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/wdipax/match/adapter/tgevent"
+	"github.com/wdipax/match/adapter/tgresponse"
+	"github.com/wdipax/match/state"
 )
 
 func main() {
@@ -22,11 +25,23 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
+	s := state.New()
+
+	admin := os.Getenv("ADMIN_USER_NAME")
+
 	// TODO: shutdown on receiving termination signal.
 	// TODO: skip all messages created before the bot has started.
 	// TODO: serve concurrently.
 	for update := range updates {
-		_ = update
-		// a.Process(update)
+		e := tgevent.New(update, admin, s.Step())
+
+		r := s.Process(e)
+		if r == nil {
+			continue
+		}
+
+		for _, m := range tgresponse.From(r, bot.Self.UserName) {
+			bot.Send(m)
+		}
 	}
 }
