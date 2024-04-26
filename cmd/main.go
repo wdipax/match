@@ -5,7 +5,6 @@ import (
 	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/wdipax/match/adapter"
 )
 
 func main() {
@@ -14,6 +13,7 @@ func main() {
 		log.Fatalf("creating bot: %s", err)
 	}
 
+	// TODO: do we need this?
 	bot.Debug = true
 
 	updateConfig := tgbotapi.NewUpdate(0)
@@ -22,18 +22,11 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
-	a := adapter.New(bot, func(u *tgbotapi.User) bool {
-		if u == nil {
-			return false
-		}
-
-		return u.UserName == os.Getenv("ADMIN_USER_NAME")
-	})
-
 	// TODO: shutdown on receiving termination signal.
 	// TODO: skip all messages created before the bot has started.
 	// TODO: serve concurrently.
 	for update := range updates {
-		a.Process(update)
+		_ = update
+		// a.Process(update)
 	}
 }
