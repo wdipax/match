@@ -3,36 +3,39 @@ package state_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/wdipax/match/protocol/command"
 	"github.com/wdipax/match/protocol/response"
 	"github.com/wdipax/match/state"
 )
 
+const (
+	admin int64 = iota
+)
+
 func TestState(t *testing.T) {
 	t.Parallel()
 
-	const (
-		admin int64 = iota
-	)
-
 	s := state.New()
+
+	initialize(t, s)
+}
+
+func initialize(tb testing.TB, s *state.State) {
+	tb.Helper()
 
 	var e fakeEvent
 	e.command = command.Initialize
 	e.user = admin
 
 	r := s.Process(e)
-	require.NotEmpty(t, r)
+	require.NotEmpty(tb, r)
+	require.Len(tb, r.Messages, 2)
+	require.Equal(tb, admin, r.Messages[0].To)
+	require.Equal(tb, response.BoysToken, r.Messages[0].Type)
+	require.Equal(tb, admin, r.Messages[1].To)
+	require.Equal(tb, response.GirlsToken, r.Messages[1].Type)
 
-	if assert.Len(t, r.Messages, 2) {
-		assert.Equal(t, admin, r.Messages[0].To)
-		assert.Equal(t, response.BoysToken, r.Messages[0].Type)
-
-		assert.Equal(t, admin, r.Messages[1].To)
-		assert.Equal(t, response.GirlsToken, r.Messages[1].Type)
-	}
 }
 
 type fakeEvent struct {
