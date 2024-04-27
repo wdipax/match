@@ -40,7 +40,7 @@ func main() {
 			continue
 		}
 
-		for _, m := range tgresponse.From(r, bot.Self.UserName) {
+		for _, m := range tgresponse.From(r, bot.Self.UserName, s.Step(), s.Admin()) {
 			bot.Send(m)
 		}
 	}

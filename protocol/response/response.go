@@ -2,8 +2,17 @@ package response
 
 const (
 	Text = iota
+	Control
 	BoysToken
 	GirlsToken
+	RestrictedForAdmin
+	Restricted
+	Joined
+	Failed
+	Success
+	ViewBoys
+	ViewGirls
+	KnowEachother
 )
 
 type Message struct {

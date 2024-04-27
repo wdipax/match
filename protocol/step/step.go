@@ -4,4 +4,5 @@ const (
 	Unknown = iota
 	Initialization
 	Registration
+	KnowEachother
 )

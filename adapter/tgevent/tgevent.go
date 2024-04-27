@@ -2,6 +2,7 @@ package tgevent
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/wdipax/match/adapter/tgcontrol"
 	"github.com/wdipax/match/protocol/command"
 	"github.com/wdipax/match/protocol/step"
 )
@@ -21,11 +22,29 @@ func New(update tgbotapi.Update, admin string, stage int) *TGEvent {
 }
 
 func (e *TGEvent) Command() int {
-	if e.SentFrom() != nil && e.SentFrom().UserName == e.admin && e.stage == step.Initialization {
+	switch {
+	case e.SentFrom() != nil && e.fromAdmin() && e.stage == step.Initialization:
 		return command.Initialize
+	case e.Message != nil && e.Message.Command() == "start":
+		return command.Join
+	case e.Message != nil && !e.fromAdmin() && e.stage == step.Registration:
+		return command.SetName
+	case e.Message != nil && e.fromAdmin() && e.stage != step.Initialization:
+		switch e.Message.Text {
+		case tgcontrol.Stat(e.stage):
+			return command.Stat
+		case tgcontrol.Next(e.stage):
+			return command.Next
+		default:
+			return command.Unknown
+		}
+	default:
+		return command.Unknown
 	}
+}
 
-	return command.Unknown
+func (e *TGEvent) fromAdmin() bool {
+	return e.Message != nil && e.SentFrom().UserName == e.admin
 }
 
 func (e *TGEvent) User() int64 {
@@ -34,4 +53,17 @@ func (e *TGEvent) User() int64 {
 	}
 
 	return 0
+}
+
+func (e *TGEvent) Data() string {
+	if e.Message != nil {
+		switch {
+		case e.Message.IsCommand():
+			return e.Message.CommandArguments()
+		default:
+			return e.Message.Text
+		}
+	}
+
+	return ""
 }
