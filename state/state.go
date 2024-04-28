@@ -357,6 +357,23 @@ func (s voting) Process(e Event) *response.Response {
 		}
 	}
 
+	if e.Command() == command.Repeat {
+		m := s.getMember(e.User())
+		m.Choosen = nil
+		
+		opposite := s.opposite(e.User())
+		
+		return &response.Response{
+			Messages: []response.Message{
+				{
+					To: e.User(),
+					Data: view.FormPoll(opposite.Members()),
+					Type: response.Poll,
+				},
+			},
+		}
+	}
+
 	if e.Command() == command.Stat {
 		am := s.allMembers()
 

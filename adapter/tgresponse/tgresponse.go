@@ -53,7 +53,12 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 			case step.Registration:
 				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Ваше имя: %s\nЕсли имя не верно вы можете написать его ещё раз.", m.Data)))
 			case step.Voting:
-				res = append(res, tgbotapi.NewMessage(m.To, "Ваш ответ принят, скоро вы узнаете результат."))
+				msg := tgbotapi.NewMessage(m.To, "Ваш ответ принят, скоро вы узнаете результат.")
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(tgcontrol.Repeat(stage)),
+				))
+
+				res = append(res, msg)
 			}
 		case response.ViewBoys:
 			switch stage {
@@ -122,7 +127,10 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 
 					res = append(res, msg)
 				} else {
-					res = append(res, tgbotapi.NewMessage(m.To, matches(m.Data)))
+					msg := tgbotapi.NewMessage(m.To, matches(m.Data))
+					msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+					
+					res = append(res, msg)
 				}
 			}
 		}

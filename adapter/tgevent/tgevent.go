@@ -35,7 +35,14 @@ func (e *TGEvent) Command() int {
 	case e.Message != nil && e.Message.Command() == "start":
 		return command.Join
 	case e.Message != nil && !e.fromAdmin() && e.stage == step.Registration:
-		return command.SetName
+		switch {
+		case e.stage == step.Registration:
+			return command.SetName
+		case e.stage == step.Voting && e.Message.Text == tgcontrol.Repeat(e.stage):
+			return command.Repeat
+		default:
+			return command.Unknown
+		}
 	case e.Message != nil && e.fromAdmin() && e.stage != step.Initialization:
 		switch e.Message.Text {
 		case tgcontrol.Stat(e.stage):

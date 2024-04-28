@@ -9,4 +9,5 @@ const (
 	Back
 	Next
 	Vote
+	Repeat
 )

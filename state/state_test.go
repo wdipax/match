@@ -39,12 +39,33 @@ func voting(tb testing.TB, s *stateHelper) {
 	tb.Helper()
 
 	vote(tb, s, boy1, number(girl2))
-	vote(tb, s, boy2, number(girl2), number(girl1))
 	vote(tb, s, girl2, number(boy1), number(boy2))
+
+	vote(tb, s, boy2, number(girl1))
+	revote(tb, s, boy2)
+	vote(tb, s, boy2, number(girl2), number(girl1))
+
+	vote(tb, s, girl1, number(boy2))
+	revote(tb, s, girl1)
 
 	votingStat(tb, s)
 
 	end(tb, s)
+}
+
+func revote(tb testing.TB, s *stateHelper, user int64) {
+	tb.Helper()
+
+	var e fakeEvent
+	e.command = command.Repeat
+	e.user = user
+
+	r := s.Process(e)
+
+	require.Len(tb, r.Messages, 1)
+	require.Equal(tb, user, r.Messages[0].To)
+	require.NotEmpty(tb, r.Messages[0].Data)
+	require.Equal(tb, response.Poll, r.Messages[0].Type)
 }
 
 func end(tb testing.TB, s *stateHelper) {

@@ -34,3 +34,12 @@ func Back(stage int) string {
 		return ""
 	}
 }
+
+func Repeat(stage int) string {
+	switch stage {
+	case step.Voting:
+		return "изменить выбор"
+	default:
+		return ""
+	}
+}
