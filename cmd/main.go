@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wdipax/match/adapter/tgevent"
@@ -29,11 +30,14 @@ func main() {
 
 	admin := os.Getenv("ADMIN_USER_NAME")
 
+	started := time.Now()
+
 	// TODO: shutdown on receiving termination signal.
-	// TODO: skip all messages created before the bot has started.
-	// TODO: serve concurrently.
 	for update := range updates {
-		e := tgevent.New(update, admin, s.Step())
+		e := tgevent.New(update, admin, s.Step(), started)
+		if e == nil {
+			continue
+		}
 
 		r := s.Process(e)
 		if r == nil {

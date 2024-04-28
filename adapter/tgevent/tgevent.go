@@ -1,6 +1,8 @@
 package tgevent
 
 import (
+	"time"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wdipax/match/adapter/tgcontrol"
 	"github.com/wdipax/match/protocol/command"
@@ -14,7 +16,11 @@ type TGEvent struct {
 	stage int
 }
 
-func New(update tgbotapi.Update, admin string, stage int) *TGEvent {
+func New(update tgbotapi.Update, admin string, stage int, started time.Time) *TGEvent {
+	if update.Message != nil && update.Message.Date < int(started.Unix()) {
+		return nil
+	}
+
 	return &TGEvent{
 		Update: update,
 		admin:  admin,
