@@ -5,6 +5,7 @@ import (
 	"github.com/wdipax/match/adapter/tgcontrol"
 	"github.com/wdipax/match/protocol/command"
 	"github.com/wdipax/match/protocol/step"
+	"github.com/wdipax/match/state/view"
 )
 
 type TGEvent struct {
@@ -33,11 +34,15 @@ func (e *TGEvent) Command() int {
 		switch e.Message.Text {
 		case tgcontrol.Stat(e.stage):
 			return command.Stat
+		case tgcontrol.Back(e.stage):
+			return command.Back
 		case tgcontrol.Next(e.stage):
 			return command.Next
 		default:
 			return command.Unknown
 		}
+	case e.Poll != nil:
+		return command.Vote
 	default:
 		return command.Unknown
 	}
@@ -56,13 +61,36 @@ func (e *TGEvent) User() int64 {
 }
 
 func (e *TGEvent) Data() string {
-	if e.Message != nil {
+	switch {
+	case e.Message != nil:
 		switch {
 		case e.Message.IsCommand():
 			return e.Message.CommandArguments()
 		default:
 			return e.Message.Text
 		}
+	case e.Poll != nil:
+		var choosen []int
+
+		for _, o := range e.Poll.Options {
+			if o.VoterCount == 0 {
+				continue
+			}
+
+			choosen = append(choosen, view.UserNumberFrom(o.Text))
+		}
+
+		var r view.PollResult
+
+		return r.Encode(choosen)
+	default:
+		return ""
+	}
+}
+
+func (e *TGEvent) Contact() string {
+	if e.SentFrom() != nil {
+		return e.SentFrom().UserName
 	}
 
 	return ""

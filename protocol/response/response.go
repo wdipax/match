@@ -13,6 +13,10 @@ const (
 	ViewBoys
 	ViewGirls
 	KnowEachother
+	BackToRegistration
+	Poll
+	Stat
+	End
 )
 
 type Message struct {

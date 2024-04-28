@@ -7,6 +7,7 @@ import (
 	"github.com/wdipax/match/adapter/tgcontrol"
 	"github.com/wdipax/match/protocol/response"
 	"github.com/wdipax/match/protocol/step"
+	"github.com/wdipax/match/state/view"
 )
 
 func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.Chattable {
@@ -18,6 +19,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 			switch stage {
 			case step.Registration:
 				msg := tgbotapi.NewMessage(m.To, "Отправьте ссылки гостям.")
+
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(tgcontrol.Stat(stage)),
 					tgbotapi.NewKeyboardButton(tgcontrol.Next(stage)),
@@ -50,6 +52,8 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 			switch stage {
 			case step.Registration:
 				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Ваше имя: %s\nЕсли имя не верно вы можете написать его ещё раз.", m.Data)))
+			case step.Voting:
+				res = append(res, tgbotapi.NewMessage(m.To, "Ваш ответ принят, скоро вы узнаете результат."))
 			}
 		case response.ViewBoys:
 			switch stage {
@@ -63,7 +67,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 			}
 		case response.KnowEachother:
 			msg := tgbotapi.NewMessage(m.To, "Давайте знакомиться.")
-			
+
 			if m.To == admin {
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(tgcontrol.Back(stage)),
@@ -72,6 +76,55 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 			}
 
 			res = append(res, msg)
+		case response.BackToRegistration:
+			msg := tgbotapi.NewMessage(m.To, "Хотя нет, давайте ещё подождём гостей.")
+
+			if m.To == admin {
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(tgcontrol.Stat(stage)),
+					tgbotapi.NewKeyboardButton(tgcontrol.Next(stage)),
+				))
+			}
+
+			res = append(res, msg)
+		case response.Poll:
+			if m.To == admin {
+				msg := tgbotapi.NewMessage(admin, "Голосование началось.")
+
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(tgcontrol.Stat(stage)),
+					tgbotapi.NewKeyboardButton(tgcontrol.Next(stage)),
+				))
+
+				res = append(res, msg)
+			} else {
+				var p view.Poll
+
+				p.Decode(m.Data)
+
+				poll := tgbotapi.NewPoll(m.To, "Какие гости вам понравились?", p.Options...)
+
+				poll.AllowsMultipleAnswers = true
+
+				res = append(res, poll)
+			}
+		case response.Stat:
+			switch stage {
+			case step.Voting:
+				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Проголосовало гостей: %s", m.Data)))
+			}
+		case response.End:
+			switch stage {
+			case step.End:
+				if m.To == admin {
+					msg := tgbotapi.NewMessage(admin, "Знакомство завершено, гости обменялись контактами.")
+					msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+
+					res = append(res, msg)
+				} else {
+					res = append(res, tgbotapi.NewMessage(m.To, matches(m.Data)))
+				}
+			}
 		}
 	}
 
@@ -81,6 +134,14 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 func group(v string) string {
 	if v == "" {
 		return "Пока никого."
+	}
+
+	return v
+}
+
+func matches(v string) string {
+	if v == "" {
+		return "К сожалению у вас нет совпадений."
 	}
 
 	return v

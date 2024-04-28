@@ -5,4 +5,6 @@ const (
 	Initialization
 	Registration
 	KnowEachother
+	Voting
+	End
 )

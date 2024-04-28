@@ -6,6 +6,8 @@ func Stat(stage int) string {
 	switch stage {
 	case step.Registration:
 		return "участники"
+	case step.Voting:
+		return "статистика"
 	default:
 		return ""
 	}
@@ -17,6 +19,8 @@ func Next(stage int) string {
 		return "начать знакомство"
 	case step.KnowEachother:
 		return "начать голосование"
+	case step.Voting:
+		return "подвести итоги"
 	default:
 		return ""
 	}

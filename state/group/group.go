@@ -27,30 +27,31 @@ func New() *Group {
 	}
 }
 
-func (g *Group) Add(user int64) int {
+func (g *Group) Add(user int64, contact string) int {
 	n := g.nextNumber()
 
 	g.members = append(g.members, &member.Member{
-		User:   user,
-		Number: n,
+		User:    user,
+		Contact: contact,
+		Number:  n,
 	})
 
 	return n
 }
 
 func (g *Group) HasMember(user int64) bool {
-	return g.getMember(user) != nil
+	return g.Member(user) != nil
 }
 
 func (g *Group) SetName(user int64, name string) {
-	g.getMember(user).Name = name
+	g.Member(user).Name = name
 }
 
 func (g *Group) Members() []*member.Member {
 	return g.members
 }
 
-func (g *Group) getMember(user int64) *member.Member {
+func (g *Group) Member(user int64) *member.Member {
 	for _, m := range g.members {
 		if m.User == user {
 			return m
@@ -58,4 +59,24 @@ func (g *Group) getMember(user int64) *member.Member {
 	}
 
 	return nil
+}
+
+func (g *Group) MemberBy(number int) *member.Member {
+	for _, m := range g.members {
+		if m.Number == number {
+			return m
+		}
+	}
+
+	return nil
+}
+
+func (g *Group) Users() []int64 {
+	var users []int64
+
+	for _, m := range g.members {
+		users = append(users, m.User)
+	}
+
+	return users
 }

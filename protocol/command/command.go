@@ -6,5 +6,7 @@ const (
 	Join
 	SetName
 	Stat
+	Back
 	Next
+	Vote
 )
