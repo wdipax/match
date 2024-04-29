@@ -3,7 +3,7 @@ RUN apk add build-base
 WORKDIR /build
 COPY . .
 RUN go mod tidy
-ARG LANG="ru"
+ARG LANG="en"
 RUN CGO_ENABLED=1 go test -race -tags=${LANG} ./...
 RUN go build -tags=${LANG} -trimpath -o bot ./cmd/main.go
 

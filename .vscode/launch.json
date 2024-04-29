@@ -12,7 +12,7 @@
             "program": "./cmd/main.go",
             "envFile": "./.env",
             "buildFlags": [
-                "-tags=ru"
+                "-tags=en"
             ]
         }
     ],
