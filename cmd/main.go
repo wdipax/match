@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
+	"os/signal"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -32,20 +34,41 @@ func main() {
 
 	started := time.Now()
 
-	// TODO: shutdown on receiving termination signal.
-	for update := range updates {
-		e := tgevent.New(update, admin, s.Step(), started)
-		if e == nil {
-			continue
-		}
+	ctx, cancel := context.WithCancel(context.Background())
 
-		r := s.Process(e)
-		if r == nil {
-			continue
-		}
+	c := make(chan os.Signal, 1)
 
-		for _, m := range tgresponse.From(r, bot.Self.UserName, s.Step(), s.Admin()) {
-			bot.Send(m)
+	signal.Notify(c, os.Interrupt)
+
+	go func() {
+		<-c
+		cancel()
+	}()
+
+loop:
+	for ctx.Err() == nil {
+		select {
+		case <-ctx.Done():
+			break loop
+		case update := <-updates:
+			e := tgevent.New(update, admin, s.Step(), started)
+			if e == nil {
+				continue
+			}
+
+			r := s.Process(e)
+			if r == nil {
+				continue
+			}
+
+			for _, m := range tgresponse.From(r, bot.Self.UserName, s.Step(), s.Admin()) {
+				bot.Send(m)
+			}
+
 		}
+	}
+
+	if ctx.Err() != nil {
+		log.Println("stopped normally")
 	}
 }
