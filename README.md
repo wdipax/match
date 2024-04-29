@@ -1,38 +1,29 @@
-## The game.
-1. Add the Male team.
-1. Open registration to the Male team.
-1. Add members to the Male team.
-1. Close registration to the Male team.
-1. Add Female team.
-1. Open registration to the Female team.
-1. Add members to the Female team.
-1. Close registration to the Female team.
-1. Know each other.
-1. Vote for each other.
-1. Receive matches.
-1. Delete data.
+# Speed Dating Telegram Bot
 
-## Actions.
-1. Start/End a session. [admin]
-1. CRUD Team. [admin]
-1. Open/close registration to the team. [admin]
-1. CRUD Team member [admin,user]
-1. Vote. [user]
-1. Receive matches. [user]
+## The Flow
 
-## Restrictions.
-1. Only one session at a time for the admin.
-1. Only two teams per session: Male and Female.
-1. User can be registered only for one team.
-1. User can edit his profile only when registration to the team is open.
-1. User can vote only once per session. Though, multiple choices are allowed.
+The bot awaits for a message from admin. 
+Then it responds with two links. One for boys and one for girls.
+Admin should send those links in private messages to every guest.
+Guests can join groups using these links.
 
-## Session states.
-1. Teams creation.
-1. Team members registration.
-1. Speed dating.
-1. Voting.
-1. Match making. [when all players vote, or by admin]
+Bot will display control buttons for the admin. 
+Admin can guide the event by using those buttons.
 
-## Corner cases.
-1. Some player never votes. Then the admin can start the match making.
+After the guests know each other the admin starts voting.
+Guests vote for each other.
+Admin can see the statistics on the number of guests who voted.
+Admin has to end voting when ready.
+After this, all guests will receive contacts of their matches in Telegram.
+
+## Build
+
+```sh
+docker build -t match:latest --build-arg LANG=en .
+```
+
+## Run
+
+```sh
+docker run --rm -e TELEGRAM_BOT_TOKEN=$YOUR_TG_BOT_TOKEN -e ADMIN_USER_NAME=$YOUR_TG_USERNAME -e DEBUG=false match:latest
+```
