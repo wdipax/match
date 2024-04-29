@@ -10,6 +10,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wdipax/match/adapter/tgevent"
 	"github.com/wdipax/match/adapter/tgresponse"
+	"github.com/wdipax/match/protocol/step"
 	"github.com/wdipax/match/state"
 )
 
@@ -19,8 +20,9 @@ func main() {
 		log.Fatalf("creating bot: %s", err)
 	}
 
-	// TODO: do we need this?
-	bot.Debug = true
+	if v := os.Getenv("DEBUG"); v == "true" {
+		bot.Debug = true
+	}
 
 	updateConfig := tgbotapi.NewUpdate(0)
 
@@ -45,6 +47,10 @@ func main() {
 		cancel()
 	}()
 
+	report := changeStageReporter()
+
+	log.Println("started")
+
 loop:
 	for ctx.Err() == nil {
 		select {
@@ -57,18 +63,35 @@ loop:
 			}
 
 			r := s.Process(e)
+
+			report(s.Step())
+
 			if r == nil {
 				continue
 			}
 
 			for _, m := range tgresponse.From(r, bot.Self.UserName, s.Step(), s.Admin()) {
-				bot.Send(m)
+				_, err := bot.Send(m)
+				if err != nil {
+					log.Printf("sending message: %s", err)
+				}
 			}
-
 		}
 	}
 
 	if ctx.Err() != nil {
 		log.Println("stopped normally")
+	}
+}
+
+func changeStageReporter() func(current int) {
+	var prev int
+
+	return func(current int) {
+		if prev != current {
+			log.Printf("stage changed: %s -> %s", step.Name(prev), step.Name(current))
+
+			prev = current
+		}
 	}
 }
