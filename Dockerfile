@@ -3,8 +3,9 @@ RUN apk add build-base
 WORKDIR /build
 COPY . .
 RUN go mod tidy
-RUN CGO_ENABLED=1 go test -race ./...
-RUN go build -trimpath -o bot ./cmd/main.go
+ARG LANG="ru"
+RUN CGO_ENABLED=1 go test -race -tags=${LANG} ./...
+RUN go build -tags=${LANG} -trimpath -o bot ./cmd/main.go
 
 FROM alpine:3.19
 WORKDIR /app

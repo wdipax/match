@@ -18,7 +18,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 		case response.Control:
 			switch stage {
 			case step.Registration:
-				msg := tgbotapi.NewMessage(m.To, "Отправьте ссылки гостям.")
+				msg := tgbotapi.NewMessage(m.To, sendLinksTpGuests)
 
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(tgcontrol.Stat(stage)),
@@ -28,32 +28,32 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 				res = append(res, msg)
 			}
 		case response.BoysToken:
-			res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Ссылка для джентельменов https://t.me/%s?start=%s", bot, m.Data)))
+			res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(linkForBoysTemplate, bot, m.Data)))
 		case response.GirlsToken:
-			res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Ссылка для леди https://t.me/%s?start=%s", bot, m.Data)))
+			res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(linkForGirlsTemplate, bot, m.Data)))
 		case response.RestrictedForAdmin:
 			switch stage {
 			case step.Registration:
-				res = append(res, tgbotapi.NewMessage(m.To, "Вы администратор и по этому не можете присоединиться к группе."))
+				res = append(res, tgbotapi.NewMessage(m.To, adminCanNotJoinGroup))
 			}
 		case response.Restricted:
 			switch stage {
 			case step.Registration:
-				res = append(res, tgbotapi.NewMessage(m.To, "Не получилось присоединить вас к группе, возможно ссылка не дейсвительна."))
+				res = append(res, tgbotapi.NewMessage(m.To, canNotJoinGroup))
 			}
 		case response.Joined:
-			res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Ваш номер: %s\nКак вас зовут?", m.Data)))
+			res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(whatIsYourNameTemplate, m.Data)))
 		case response.Failed:
 			switch stage {
 			case step.Registration:
-				res = append(res, tgbotapi.NewMessage(m.To, "Не получилось обновить имя, возможно ссылка не дейсвительна."))
+				res = append(res, tgbotapi.NewMessage(m.To, canNotUpdateName))
 			}
 		case response.Success:
 			switch stage {
 			case step.Registration:
-				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Ваше имя: %s\nЕсли имя не верно вы можете написать его ещё раз.", m.Data)))
+				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(nameUpdatedTemplate, m.Data)))
 			case step.Voting:
-				msg := tgbotapi.NewMessage(m.To, "Ваш ответ принят, скоро вы узнаете результат.")
+				msg := tgbotapi.NewMessage(m.To, voteReceived)
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(tgcontrol.Repeat(stage)),
 				))
@@ -63,15 +63,15 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 		case response.ViewBoys:
 			switch stage {
 			case step.Registration:
-				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Джентельмены:\n%s", group(m.Data))))
+				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(boysGroupInfoTemplate, group(m.Data))))
 			}
 		case response.ViewGirls:
 			switch stage {
 			case step.Registration:
-				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Леди:\n%s", group(m.Data))))
+				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(girlsGroupInfoTemplate, group(m.Data))))
 			}
 		case response.KnowEachother:
-			msg := tgbotapi.NewMessage(m.To, "Давайте знакомиться.")
+			msg := tgbotapi.NewMessage(m.To, startDating)
 
 			if m.To == admin {
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
@@ -82,7 +82,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 
 			res = append(res, msg)
 		case response.BackToRegistration:
-			msg := tgbotapi.NewMessage(m.To, "Хотя нет, давайте ещё подождём гостей.")
+			msg := tgbotapi.NewMessage(m.To, backToRegistration)
 
 			if m.To == admin {
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
@@ -94,7 +94,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 			res = append(res, msg)
 		case response.Poll:
 			if m.To == admin {
-				msg := tgbotapi.NewMessage(admin, "Голосование началось.")
+				msg := tgbotapi.NewMessage(admin, votingStarted)
 
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(tgcontrol.Stat(stage)),
@@ -107,7 +107,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 
 				p.Decode(m.Data)
 
-				poll := tgbotapi.NewPoll(m.To, "Какие гости вам понравились?", p.Options...)
+				poll := tgbotapi.NewPoll(m.To, whoDoYouLike, p.Options...)
 
 				poll.AllowsMultipleAnswers = true
 
@@ -116,20 +116,20 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 		case response.Stat:
 			switch stage {
 			case step.Voting:
-				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf("Проголосовало гостей: %s", m.Data)))
+				res = append(res, tgbotapi.NewMessage(m.To, fmt.Sprintf(votingStatisticsTemplate, m.Data)))
 			}
 		case response.End:
 			switch stage {
 			case step.End:
 				if m.To == admin {
-					msg := tgbotapi.NewMessage(admin, "Знакомство завершено, гости обменялись контактами.")
+					msg := tgbotapi.NewMessage(admin, votingEnded)
 					msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
 
 					res = append(res, msg)
 				} else {
 					msg := tgbotapi.NewMessage(m.To, matches(m.Data))
 					msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
-					
+
 					res = append(res, msg)
 				}
 			}
@@ -141,7 +141,7 @@ func From(r *response.Response, bot string, stage int, admin int64) []tgbotapi.C
 
 func group(v string) string {
 	if v == "" {
-		return "Пока никого."
+		return noMembers
 	}
 
 	return v
@@ -149,7 +149,7 @@ func group(v string) string {
 
 func matches(v string) string {
 	if v == "" {
-		return "К сожалению у вас нет совпадений."
+		return noMatches
 	}
 
 	return v

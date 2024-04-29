@@ -5,9 +5,9 @@ import "github.com/wdipax/match/protocol/step"
 func Stat(stage int) string {
 	switch stage {
 	case step.Registration:
-		return "участники"
+		return members
 	case step.Voting:
-		return "статистика"
+		return statistics
 	default:
 		return ""
 	}
@@ -16,11 +16,11 @@ func Stat(stage int) string {
 func Next(stage int) string {
 	switch stage {
 	case step.Registration:
-		return "начать знакомство"
+		return startDating
 	case step.KnowEachother:
-		return "начать голосование"
+		return startVoting
 	case step.Voting:
-		return "подвести итоги"
+		return endVoting
 	default:
 		return ""
 	}
@@ -29,7 +29,7 @@ func Next(stage int) string {
 func Back(stage int) string {
 	switch stage {
 	case step.KnowEachother:
-		return "вернуться к регистрации"
+		return backToRegistration
 	default:
 		return ""
 	}
@@ -38,7 +38,7 @@ func Back(stage int) string {
 func Repeat(stage int) string {
 	switch stage {
 	case step.Voting:
-		return "изменить выбор"
+		return revote
 	default:
 		return ""
 	}

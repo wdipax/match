@@ -10,7 +10,10 @@
             "request": "launch",
             "mode": "debug",
             "program": "./cmd/main.go",
-            "envFile": "./.env"
+            "envFile": "./.env",
+            "buildFlags": [
+                "-tags=ru"
+            ]
         }
     ],
 }
