@@ -4,7 +4,7 @@ COPY . .
 RUN go mod tidy
 RUN go build -o bot ./cmd/main.go
 
-FROM scratch
+FROM alpine:3.19
 WORKDIR /app
 COPY --from=build /build/bot .
 ENTRYPOINT [ "./bot" ]
